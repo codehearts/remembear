@@ -1,0 +1,14 @@
+[package]
+name = "remembear"
+version = "0.1.0"
+authors = ["Catherine Hart"]
+description = "Self-hosted web app for recurring reminders"
+homepage = "https://github.com/codehearts/remembear"
+repository = "https://github.com/codehearts/remembear"
+documentation = "https://docs.rs/remembear"
+license = "MIT"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

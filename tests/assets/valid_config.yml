@@ -1,0 +1,3 @@
+database:
+  sqlite:
+    path: valid.sqlite3

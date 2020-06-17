@@ -11,4 +11,9 @@ edition = "2018"
 
 [dependencies]
 config = { version="0.10.1", default-features=false, features=["yaml"] }
+diesel = { version="1.4", default-features=false, features=["sqlite"] }
 serde = { version="1.0", default-features=false, features=["std", "derive"] }
+thiserror = "1.0"
+
+[dev-dependencies]
+tempfile = "3.1"

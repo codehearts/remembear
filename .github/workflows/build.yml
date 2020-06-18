@@ -1,0 +1,81 @@
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+name: Build
+
+jobs:
+  rustfmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt
+      - name: Rustfmt
+        run: cargo fmt --all -- --check
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy
+      - name: Clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Install Sqlite3
+        run: sudo apt-get -q update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
+      - name: Tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          args: '--all-features --ignored'
+        env:
+          CARGO_HUSKY_DONT_INSTALL_HOOKS: true
+      - name: Codecov
+        uses: codecov/codecov-action@v1
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Install Sqlite3
+        run: sudo apt-get -q update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
+      - name: Release Build
+        run: cargo build --release --all-features

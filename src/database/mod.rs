@@ -1,32 +1,29 @@
 //! Database controller for persistent storage
 
 pub mod error;
-mod schema;
+pub mod schema;
+mod sqlite;
 
-use diesel::prelude::*;
-use diesel::sqlite::SqliteConnection;
-use error::Error;
+#[cfg(test)]
+use mockall::automock;
 
-/// Manages database connections
-pub struct Database {
-    _connection: SqliteConnection,
-}
+use diesel::insertable::CanInsertInSingleQuery;
+use diesel::query_builder::QueryFragment;
+use diesel::sqlite::Sqlite as SqliteBackend;
 
-impl Database {
+pub use error::Error;
+pub use sqlite::Sqlite;
+
+/// Interface to manage a database connection
+#[cfg_attr(test, automock)]
+pub trait Database {
     /// Connects to the provided database url
     ///
     /// # Errors
     ///
     /// When a connection to the database can not be established
-    pub fn connect(database_url: &str) -> Result<Self, Error> {
-        let connection =
-            SqliteConnection::establish(database_url).map_err(|source| Error::Connection {
-                database_url: database_url.to_string(),
-                source,
-            })?;
+    fn connect(database_url: &str) -> Result<Self, Error>
+    where
+        Self: Sized;
 
-        Ok(Self {
-            _connection: connection,
-        })
-    }
 }

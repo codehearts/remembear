@@ -1,6 +1,6 @@
 //! Integration tests for managing persistent storage via a database
 
-use remembear::database::{error::Error, Database};
+use remembear::database::{self, error::Error, Database};
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -11,18 +11,18 @@ fn get_temp_database_url() -> Result<String> {
 }
 
 #[test]
-fn it_creates_database_object_when_connection_succeeds() -> Result<()> {
+fn it_creates_sqlite_database_object_when_connection_succeeds() -> Result<()> {
     let database_url = get_temp_database_url()?;
-    Database::connect(&database_url)?;
+    database::Sqlite::connect(&database_url)?;
 
     Ok(())
 }
 
 #[test]
-fn it_returns_connection_error_for_bad_database_url() -> Result<()> {
+fn it_returns_connection_error_for_bad_sqlite_database_url() -> Result<()> {
     let invalid_database_url = "localhost/bad_url";
 
-    match Database::connect(&invalid_database_url) {
+    match database::Sqlite::connect(&invalid_database_url) {
         Err(Error::Connection { database_url, .. }) => {
             assert_eq!(invalid_database_url, database_url)
         }

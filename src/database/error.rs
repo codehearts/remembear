@@ -1,6 +1,7 @@
 //! Error types for database operation failures
 
 use diesel::result::ConnectionError;
+use diesel::result::Error as DieselError;
 use thiserror::Error;
 
 /// Database operation errors
@@ -13,5 +14,12 @@ pub enum Error {
         database_url: String,
         /// Underlying error type
         source: ConnectionError,
+    },
+    /// A database insertion operation failed
+    #[error("Failed to insert into database: {source}")]
+    Insertion {
+        /// Underlying error type
+        #[from]
+        source: DieselError,
     },
 }

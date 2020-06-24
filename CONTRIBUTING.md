@@ -2,14 +2,14 @@
 
 Remembear is a Rust library which can be built as a binary application. This guide will get you up to speed on how to contribute
 
-- [Getting Started](#star2-getting-started)
+- [:star2: Getting Started](#star2-getting-started)
   - [Helpful Resources](#helpful-resources)
-- [Project Structure](#herb-project-structure)
-- [Development](#computer-development)
+- [:herb: Project Structure](#herb-project-structure)
+- [:computer: Development](#computer-development)
   - [Unit Tests](#unit-tests)
   - [Integration Tests](#integration-tests)
-- [Submitting Changes](#incoming_envelope-submitting-changes)
-- [Getting in Touch](#phone-getting-in-touch)
+- [:incoming_envelope: Submitting Changes](#incoming_envelope-submitting-changes)
+- [:phone: Getting in Touch](#phone-getting-in-touch)
 
 ## :star2: Getting Started
 
@@ -50,6 +50,10 @@ If you're new to Rust, you may find these resources helpful:
 - `src/` - Source code
   - `lib.rs` - Library entrypoint
   - `main.rs` - Binary entrypoint 
+  - `database/` - Database management layer
+  - `user/` - User management layer
+    - `model.rs` - Database-compatible structures for user data
+    - `provider.rs` - Provides user data, abstracting away the database dependency
 - `tests/` - Integration tests
   - `assets/` - Integration test assets
 - `migrations/` - Database schemas for use with [Diesel](http://diesel.rs)

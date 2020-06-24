@@ -26,4 +26,18 @@ pub trait Database {
     where
         Self: Sized;
 
+    /// Inserts a value into a database table
+    ///
+    /// # Errors
+    ///
+    /// When the database insertion fails
+    fn insert_into<TTable: 'static + diesel::Table, TValue: 'static + diesel::Insertable<TTable>>(
+        &self,
+        table: TTable,
+        value: TValue,
+    ) -> Result<(), Error>
+    where
+        <TTable as diesel::QuerySource>::FromClause: QueryFragment<SqliteBackend>,
+        <TValue as diesel::Insertable<TTable>>::Values:
+            QueryFragment<SqliteBackend> + CanInsertInSingleQuery<SqliteBackend>;
 }

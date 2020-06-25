@@ -2,15 +2,16 @@ use super::model::NewUser;
 use super::Error;
 use crate::database::{self, Database};
 use diesel::prelude::*;
+use std::sync::Arc;
 
 /// Provides access to user data in persistent storage
-pub struct Provider<TDatabase: Database> {
-    database: TDatabase,
+pub struct Provider {
+    database: Arc<dyn Database>,
 }
 
-impl<TDatabase: Database> Provider<TDatabase> {
+impl Provider {
     /// Creates a new user data provider
-    pub fn new(database: TDatabase) -> Self {
+    pub fn new(database: Arc<dyn Database>) -> Self {
         Self { database }
     }
 

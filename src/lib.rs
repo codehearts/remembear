@@ -15,11 +15,12 @@ pub mod user;
 use crate::config::Config;
 use database::Database;
 use std::error::Error;
+use std::sync::Arc;
 
 /// All dependencies for the service
 pub struct Dependencies {
     /// Database connection for modules needing persistent storage
-    pub database: database::Sqlite,
+    pub database: Arc<database::Sqlite>,
 }
 
 /// Initializes and configures all dependencies
@@ -29,7 +30,7 @@ pub struct Dependencies {
 /// When there is an error with the config or any of the dependencies
 pub fn initialize_dependencies() -> Result<Dependencies, Box<dyn Error>> {
     let config = Config::load("remembear")?;
-    let database = database::Sqlite::connect(&config.database.sqlite.path)?;
+    let database = Arc::new(database::Sqlite::connect(&config.database.sqlite.path)?);
 
     Ok(Dependencies { database })
 }

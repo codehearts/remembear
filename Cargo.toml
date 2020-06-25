@@ -17,4 +17,5 @@ thiserror = "1.0"
 
 [dev-dependencies]
 cargo-husky = { version="1.5", features=["run-cargo-fmt", "run-cargo-clippy"] }
+diesel_migrations = { version = "1.4", features=["sqlite"] }
 mockall = "0.7"

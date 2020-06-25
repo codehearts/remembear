@@ -1,4 +1,4 @@
-use super::model::NewUser;
+use super::model::{NewUser, User};
 use super::Error;
 use crate::database::{self, Database};
 use diesel::prelude::*;
@@ -20,11 +20,22 @@ impl Provider {
     /// # Errors
     ///
     /// When the insertion fails
-    pub fn add(&self, user: NewUser) -> Result<(), Error> {
+    pub fn add(&self, user: NewUser) -> Result<User, Error> {
         diesel::insert_into(database::schema::users::table)
             .values(user)
             .execute(self.database.connection())?;
 
-        Ok(())
+        Ok(database::schema::users::table
+            .order(database::schema::users::uid.desc())
+            .first(self.database.connection())?)
+    }
+
+    /// Retrieves all users from the database
+    ///
+    /// # Errors
+    ///
+    /// When user retrieval fails
+    pub fn get_all(&self) -> Result<Vec<User>, Error> {
+        Ok(database::schema::users::table.load(self.database.connection())?)
     }
 }

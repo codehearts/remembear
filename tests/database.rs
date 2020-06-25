@@ -26,7 +26,6 @@ fn it_returns_connection_error_for_bad_sqlite_database_url() -> Result<()> {
         Err(Error::Connection { database_url, .. }) => {
             assert_eq!(invalid_database_url, database_url)
         }
-        Err(error) => panic!("Connection wasn't returned, got {}", error),
         Ok(_) => panic!("Invalid database url successfully connected"),
     }
 

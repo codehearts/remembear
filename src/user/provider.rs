@@ -1,5 +1,7 @@
 use super::model::NewUser;
+use super::Error;
 use crate::database::{self, Database};
+use diesel::prelude::*;
 
 /// Provides access to user data in persistent storage
 pub struct Provider<TDatabase: Database> {
@@ -17,32 +19,11 @@ impl<TDatabase: Database> Provider<TDatabase> {
     /// # Errors
     ///
     /// When the insertion fails
-    pub fn add(&self, user: NewUser) -> Result<(), database::Error> {
-        self.database
-            .insert_into(database::schema::users::table, user)
-    }
-}
+    pub fn add(&self, user: NewUser) -> Result<(), Error> {
+        diesel::insert_into(database::schema::users::table)
+            .values(user)
+            .execute(self.database.connection())?;
 
-#[cfg(test)]
-mod tests {
-    use super::{NewUser, Provider};
-    use crate::database::{self, MockDatabase};
-    use mockall::predicate::{always, eq};
-
-    #[test]
-    fn it_inserts_new_users_into_the_database() {
-        let new_user = NewUser {
-            name: String::from("Laura"),
-        };
-
-        let mut mock_database = MockDatabase::new();
-        mock_database
-            .expect_insert_into::<database::schema::users::table, NewUser>()
-            .with(always(), eq(new_user.clone()))
-            .times(1)
-            .returning(|_table, _value| Ok(()));
-
-        let user_provider = Provider::new(mock_database);
-        assert!(user_provider.add(new_user).is_ok());
+        Ok(())
     }
 }

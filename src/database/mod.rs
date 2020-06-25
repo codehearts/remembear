@@ -4,18 +4,10 @@ pub mod error;
 pub mod schema;
 mod sqlite;
 
-#[cfg(test)]
-use mockall::automock;
-
-use diesel::insertable::CanInsertInSingleQuery;
-use diesel::query_builder::QueryFragment;
-use diesel::sqlite::Sqlite as SqliteBackend;
-
 pub use error::Error;
 pub use sqlite::Sqlite;
 
 /// Interface to manage a database connection
-#[cfg_attr(test, automock)]
 pub trait Database {
     /// Connects to the provided database url
     ///
@@ -26,18 +18,6 @@ pub trait Database {
     where
         Self: Sized;
 
-    /// Inserts a value into a database table
-    ///
-    /// # Errors
-    ///
-    /// When the database insertion fails
-    fn insert_into<TTable: 'static + diesel::Table, TValue: 'static + diesel::Insertable<TTable>>(
-        &self,
-        table: TTable,
-        value: TValue,
-    ) -> Result<(), Error>
-    where
-        <TTable as diesel::QuerySource>::FromClause: QueryFragment<SqliteBackend>,
-        <TValue as diesel::Insertable<TTable>>::Values:
-            QueryFragment<SqliteBackend> + CanInsertInSingleQuery<SqliteBackend>;
+    /// Provides a reference to the established database connection
+    fn connection(&self) -> &diesel::sqlite::SqliteConnection;
 }

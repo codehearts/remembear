@@ -176,3 +176,33 @@ fn it_returns_updated_user() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn it_removes_existing_users() -> Result<()> {
+    let database = common_database::new()?;
+    let provider = Provider::new(database);
+
+    provider.add(NewUser {
+        name: String::from("Laura"),
+    })?;
+
+    provider.add(NewUser {
+        name: String::from("Sarah"),
+    })?;
+
+    provider.add(NewUser {
+        name: String::from("Leland"),
+    })?;
+
+    provider.remove(1)?;
+    provider.remove(3)?;
+
+    let expected_users = vec![User {
+        uid: 2,
+        name: String::from("Sarah"),
+    }];
+
+    assert_eq!(expected_users, provider.get_all()?);
+
+    Ok(())
+}

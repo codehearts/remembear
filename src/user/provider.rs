@@ -45,6 +45,18 @@ impl Provider {
         self.get_by_uid(uid)
     }
 
+    /// Removes an existing user from the database
+    ///
+    /// # Errors
+    ///
+    /// When the removal fails
+    pub fn remove(&self, uid: i32) -> Result<(), Error> {
+        diesel::delete(database::schema::users::table.find(uid))
+            .execute(self.database.connection())?;
+
+        Ok(())
+    }
+
     /// Retrieves all users from the database
     ///
     /// # Errors

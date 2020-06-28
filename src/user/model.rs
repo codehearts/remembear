@@ -3,7 +3,7 @@
 use crate::database::schema::users;
 
 /// Record for an individual user of the service
-#[derive(Debug, Identifiable, Queryable, PartialEq)]
+#[derive(AsChangeset, Debug, Identifiable, Queryable, PartialEq)]
 #[primary_key("uid")]
 pub struct User {
     /// Unique identifier for the user record
@@ -19,3 +19,6 @@ pub struct NewUser {
     /// Preferred name of the user
     pub name: String,
 }
+
+/// Necessary data to update a new user
+pub type UpdatedUser = User;

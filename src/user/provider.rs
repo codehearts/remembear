@@ -1,4 +1,4 @@
-use super::model::{NewUser, User};
+use super::model::{NewUser, UpdatedUser, User};
 use super::Error;
 use crate::database::{self, Database};
 use diesel::prelude::*;
@@ -28,6 +28,21 @@ impl Provider {
         Ok(database::schema::users::table
             .order(database::schema::users::uid.desc())
             .first(self.database.connection())?)
+    }
+
+    /// Updates an existing user in the database
+    ///
+    /// # Errors
+    ///
+    /// When the update fails
+    pub fn update(&self, user: UpdatedUser) -> Result<User, Error> {
+        let uid = user.uid;
+
+        diesel::update(database::schema::users::table.find(user.uid))
+            .set(user)
+            .execute(self.database.connection())?;
+
+        self.get_by_uid(uid)
     }
 
     /// Retrieves all users from the database

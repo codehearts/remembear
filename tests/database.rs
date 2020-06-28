@@ -1,20 +1,13 @@
 //! Integration tests for managing persistent storage via a database
 
+mod common;
+
+use common::Result;
 use remembear::database::{self, error::Error, Database};
-
-type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
-
-/// Creates a temporary sqlite3 file on disk, returning the path
-fn get_temp_database_url() -> Result<String> {
-    let temp_file = tempfile::Builder::new().suffix(".sqlite3").tempfile()?;
-    Ok(temp_file.path().display().to_string())
-}
 
 #[test]
 fn it_creates_sqlite_database_object_when_connection_succeeds() -> Result<()> {
-    let database_url = get_temp_database_url()?;
-    database::Sqlite::connect(&database_url)?;
-
+    database::Sqlite::connect("../remembear.sqlite3")?;
     Ok(())
 }
 

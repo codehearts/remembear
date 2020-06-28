@@ -38,4 +38,15 @@ impl Provider {
     pub fn get_all(&self) -> Result<Vec<User>, Error> {
         Ok(database::schema::users::table.load(self.database.connection())?)
     }
+
+    /// Retrieves user from the database by their uid
+    ///
+    /// # Errors
+    ///
+    /// When user retrieval fails
+    pub fn get_by_uid(&self, uid: i32) -> Result<User, Error> {
+        Ok(database::schema::users::table
+            .find(uid)
+            .first(self.database.connection())?)
+    }
 }

@@ -73,3 +73,31 @@ fn it_gets_inserted_users() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn it_gets_inserted_users_by_uid() -> Result<()> {
+    let database = common_database::new()?;
+    let provider = Provider::new(database);
+
+    provider.add(NewUser {
+        name: String::from("Sarah"),
+    })?;
+
+    provider.add(NewUser {
+        name: String::from("Leland"),
+    })?;
+
+    let expected_user_1 = User {
+        uid: 1,
+        name: String::from("Sarah"),
+    };
+    let expected_user_2 = User {
+        uid: 2,
+        name: String::from("Leland"),
+    };
+
+    assert_eq!(expected_user_1, provider.get_by_uid(1)?);
+    assert_eq!(expected_user_2, provider.get_by_uid(2)?);
+
+    Ok(())
+}

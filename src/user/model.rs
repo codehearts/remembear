@@ -3,7 +3,8 @@
 use crate::database::schema::users;
 
 /// Record for an individual user of the service
-#[derive(Debug, Queryable, PartialEq)]
+#[derive(Debug, Identifiable, Queryable, PartialEq)]
+#[primary_key("uid")]
 pub struct User {
     /// Unique identifier for the user record
     pub uid: i32,

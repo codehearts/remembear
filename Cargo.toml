@@ -13,9 +13,11 @@ edition = "2018"
 config = { version="0.10.1", default-features=false, features=["yaml"] }
 diesel = { version="1.4", default-features=false, features=["sqlite"] }
 serde = { version="1.0", default-features=false, features=["std", "derive"] }
+serde_json = "1.0"
+structopt = "0.3"
 thiserror = "1.0"
 
 [dev-dependencies]
 cargo-husky = { version="1.5", features=["run-cargo-fmt", "run-cargo-clippy"] }
+diesel_migrations = { version = "1.4", features=["sqlite"] }
 mockall = "0.7"
-tempfile = "3.1"

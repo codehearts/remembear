@@ -8,6 +8,7 @@
 #[macro_use]
 extern crate diesel;
 
+pub mod command;
 pub mod config;
 pub mod database;
 pub mod user;

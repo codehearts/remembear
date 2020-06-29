@@ -1,9 +1,10 @@
 //! Data models for users of the service
 
 use crate::database::schema::users;
+use serde::Serialize;
 
 /// Record for an individual user of the service
-#[derive(AsChangeset, Debug, Identifiable, Queryable, PartialEq)]
+#[derive(AsChangeset, Debug, Identifiable, PartialEq, Queryable, Serialize)]
 #[primary_key("uid")]
 pub struct User {
     /// Unique identifier for the user record

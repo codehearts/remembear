@@ -10,6 +10,16 @@ Remembear was created to manage household chores but can be used for medication 
 
 Remembear is still under active development but will be available as a binary and Docker container once released. Until then, you can check out the [contributor guidelines](https://github.com/codehearts/remembear/blob/master/CONTRIBUTING.md) for steps to build and run remembear locally
 
+## Usage
+
+### CLI Usage
+
+- User
+  - Add: Adds a new user (`remembear user add <name>`)
+  - List: Lists all users as a JSON array (`remembear user list`)
+  - Update: Updates an existing user (`remembear user update <uid> [-n name]`)
+  - Remove: Removes a user by their uid (`remembear user remove <uid>`)
+
 ## Development
 
 If you'd like to contribute to remembear's development, [CONTRIBUTING.md](https://github.com/codehearts/remembear/blob/master/CONTRIBUTING.md) will get you started. You can also [open an issue](https://github.com/codehearts/remembear/issues/new) for any bugs or feature requests, that's just as valuable as code contributions!

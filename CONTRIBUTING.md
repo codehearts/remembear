@@ -50,12 +50,16 @@ If you're new to Rust, you may find these resources helpful:
 - `src/` - Source code
   - `lib.rs` - Library entrypoint
   - `main.rs` - Binary entrypoint 
+  - `command/` - Command-line interface module
   - `database/` - Database management layer
   - `user/` - User management layer
+    - `error.rs` - Custom failure types for user data
     - `model.rs` - Database-compatible structures for user data
     - `provider.rs` - Provides user data, abstracting away the database dependency
 - `tests/` - Integration tests
   - `assets/` - Integration test assets
+  - `common/` - Common integration test functionality
+  - `common_database/` - Common functionality for integration tests that need a database
 - `migrations/` - Database schemas for use with [Diesel](http://diesel.rs)
 - `diesel.toml` - Configurations for [Diesel](http://diesel.rs)
 - `remembear.yml` - Default configuration file for remembear

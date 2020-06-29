@@ -2,7 +2,7 @@
 
 mod error;
 pub mod model;
-mod provider;
+pub mod provider;
 
 pub use error::Error;
 pub use provider::Provider;

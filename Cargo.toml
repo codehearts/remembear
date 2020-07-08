@@ -10,9 +10,10 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-config = { version="0.10.1", default-features=false, features=["yaml"] }
+chrono = { version="0.4", default-features=false, features=["clock", "serde"] }
+config = { version="0.10", default-features=false, features=["yaml"] }
 diesel = { version="1.4", default-features=false, features=["sqlite"] }
-serde = { version="1.0", default-features=false, features=["std", "derive"] }
+serde = { version="1.0", default-features=false, features=["derive", "std"] }
 serde_json = "1.0"
 structopt = "0.3"
 thiserror = "1.0"

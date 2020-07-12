@@ -26,6 +26,7 @@ impl Schedule {
     /// # Errors
     ///
     /// When the given start week is invalid or ambiguous
+    #[must_use]
     pub fn new(weekly_times: WeeklyTimes, start_date: DateTime<Utc>, assignees: Vec<i32>) -> Self {
         Schedule {
             weekly_times,

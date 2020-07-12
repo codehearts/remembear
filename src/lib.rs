@@ -11,7 +11,11 @@ extern crate diesel;
 pub mod command;
 pub mod config;
 pub mod database;
+pub mod schedule;
 pub mod user;
+
+pub use schedule::model::Schedule;
+pub use user::model::User;
 
 use crate::config::Config;
 use database::Database;
@@ -21,7 +25,7 @@ use std::sync::Arc;
 /// All dependencies for the service
 pub struct Dependencies {
     /// Database connection for modules needing persistent storage
-    pub database: Arc<database::Sqlite>,
+    pub database: Arc<dyn database::Database>,
 }
 
 /// Initializes and configures all dependencies

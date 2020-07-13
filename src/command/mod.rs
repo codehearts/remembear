@@ -2,13 +2,13 @@
 
 mod user;
 
-use crate::user::provider::UserManagement;
+use crate::user::provider::Providable;
 use structopt::StructOpt;
 
 /// Providers for CLI command functionality
 pub struct Providers<'a> {
     /// Provider for user functionality
-    pub user: &'a dyn UserManagement,
+    pub user: &'a dyn Providable,
 }
 
 /// Interface for executable CLI commands

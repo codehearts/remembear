@@ -5,7 +5,7 @@ mod common_database;
 
 use common::Result;
 use remembear::user::model::{NewUser, UpdatedUser, User};
-use remembear::user::{provider::UserManagement, Provider};
+use remembear::user::{provider::Providable, Provider};
 
 #[test]
 fn it_gets_nothing_without_users() -> Result<()> {

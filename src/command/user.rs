@@ -64,12 +64,12 @@ impl Command for User {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::user::{self, model, provider::MockUserManagement};
+    use crate::user::{self, model, provider::MockProvidable};
     use mockall::predicate::eq;
 
     fn execute(
         command: User,
-        user_provider: &MockUserManagement,
+        user_provider: &MockProvidable,
     ) -> Result<String, Box<dyn std::error::Error>> {
         let providers = Providers {
             user: user_provider,
@@ -82,7 +82,7 @@ mod tests {
     fn it_adds_new_users() -> Result<(), Box<dyn std::error::Error>> {
         let name = String::from("Leland");
 
-        let mut mock_user_provider = MockUserManagement::new();
+        let mut mock_user_provider = MockProvidable::new();
         let user = model::User {
             uid: 1,
             name: name.clone(),
@@ -105,7 +105,7 @@ mod tests {
 
     #[test]
     fn it_lists_existing_users() -> Result<(), Box<dyn std::error::Error>> {
-        let mut mock_user_provider = MockUserManagement::new();
+        let mut mock_user_provider = MockProvidable::new();
         let users = vec![
             model::User {
                 uid: 1,
@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn it_updates_existing_users() -> Result<(), Box<dyn std::error::Error>> {
-        let mut mock_user_provider = MockUserManagement::new();
+        let mut mock_user_provider = MockProvidable::new();
 
         let existing_user = model::User {
             uid: 1,
@@ -177,7 +177,7 @@ mod tests {
 
     #[test]
     fn it_outputs_an_error_for_invalid_update_uid() -> Result<(), Box<dyn std::error::Error>> {
-        let mut mock_user_provider = MockUserManagement::new();
+        let mut mock_user_provider = MockProvidable::new();
 
         mock_user_provider
             .expect_get_by_uid()
@@ -207,7 +207,7 @@ mod tests {
 
     #[test]
     fn it_removes_existing_users() -> Result<(), Box<dyn std::error::Error>> {
-        let mut mock_user_provider = MockUserManagement::new();
+        let mut mock_user_provider = MockProvidable::new();
 
         let existing_user = model::User {
             uid: 1,
@@ -237,7 +237,7 @@ mod tests {
 
     #[test]
     fn it_outputs_an_error_for_invalid_remove_uid() -> Result<(), Box<dyn std::error::Error>> {
-        let mut mock_user_provider = MockUserManagement::new();
+        let mut mock_user_provider = MockProvidable::new();
 
         mock_user_provider
             .expect_get_by_uid()

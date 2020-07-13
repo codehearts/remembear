@@ -30,11 +30,11 @@ where
         let shifted_year = self
             .year
             .checked_mul(100)
-            .ok_or_else(|| Error::InvalidStartWeekYear(self.year))?;
+            .ok_or_else(|| Error::YearTooLarge(self.year))?;
 
         let serialized_iso_week = shifted_year
             .checked_add(self.week)
-            .ok_or_else(|| Error::InvalidStartWeekWeek(self.week))?;
+            .ok_or_else(|| Error::WeekTooLarge(self.week))?;
 
         serialized_iso_week.to_sql(out)
     }
@@ -60,22 +60,15 @@ impl TryInto<DateTime<Utc>> for StoredIsoWeek {
 
     /// Converts from a `StoredIsoWeek` to chrono's `DateTime<Utc>` type
     fn try_into(self) -> Result<DateTime<Utc>, Self::Error> {
-        let week = u32::try_from(self.week).map_err(|_| Error::InvalidStartWeekWeek(self.week))?;
+        let week = u32::try_from(self.week).map_err(|_| Error::WeekTooLarge(self.week))?;
         let year = self.year;
 
         match Utc
             .isoywd_opt(year, week, Weekday::Mon)
             .and_hms_opt(0, 0, 0)
         {
-            LocalResult::None => Err(Error::InvalidStartWeek { week, year }),
-            // 0h0m0s on Monday of a valid week can't be ambiguous, but just in case...
-            LocalResult::Ambiguous(first, second) => Err(Error::AmbiguousStartWeek {
-                week,
-                year,
-                first,
-                second,
-            }),
             LocalResult::Single(start_date) => Ok(start_date),
+            _ => Err(Error::InvalidStartWeek { week, year }),
         }
     }
 }

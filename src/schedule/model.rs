@@ -72,7 +72,10 @@ impl Schedule {
             .sum();
 
         // Subtract 1 from the value to obtain an array index
-        let index = (elapsed_weeks * times_in_full_week + times_in_this_week).saturating_sub(1);
+        let index = (elapsed_weeks
+            .saturating_mul(times_in_full_week)
+            .saturating_add(times_in_this_week))
+        .saturating_sub(1);
 
         self.assignees[index % self.assignees.len()]
     }
@@ -95,6 +98,25 @@ mod tests {
 
     fn datetime(datetime: &str) -> Result<DateTime<Utc>> {
         Ok(format!("{}Z", datetime).as_str().parse()?)
+    }
+
+    #[test]
+    fn it_caps_elapsed_weeks() -> Result<()> {
+        let schedule = Schedule::new(
+            vec![(Weekday::Mon, vec![time(0, 0)])].into_iter().collect(),
+            week(2020, 3),
+            vec![1, 2],
+        );
+
+        // Times in the past will overflow `usize`, so they will be capped
+        assert_eq!(1, schedule.get_assignee(week(2020, 1)));
+        assert_eq!(1, schedule.get_assignee(week(2020, 2)));
+        // 0 elapsed weeks starts with the first assignee
+        assert_eq!(1, schedule.get_assignee(week(2020, 3)));
+        // 1 elapsed week continues as normal
+        assert_eq!(2, schedule.get_assignee(week(2020, 4)));
+
+        Ok(())
     }
 
     #[test]

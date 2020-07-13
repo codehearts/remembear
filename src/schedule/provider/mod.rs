@@ -4,12 +4,13 @@ mod model;
 
 use super::{model::Schedule, Error};
 use crate::database::schema::reminders;
+use chrono::Datelike;
 use diesel::deserialize::{FromSqlRow, Result as FromSqlResult};
 use diesel::sql_types::{Integer, Text};
 use diesel::{backend::Backend, row::Row};
 use model::{StoredAssignees, StoredIsoWeek, StoredWeeklyTimes};
 use serde::Deserialize;
-use std::convert::TryInto;
+use std::convert::{From, TryInto};
 
 /// Provides access to scheduling data in persistent storage
 #[derive(Debug, Deserialize, Insertable, PartialEq, Queryable)]
@@ -17,11 +18,11 @@ use std::convert::TryInto;
 pub struct Provider {
     /// Scheduled times of day throughout the week
     #[column_name = "schedule"]
-    weekly_times: StoredWeeklyTimes,
+    pub(crate) weekly_times: StoredWeeklyTimes,
     /// Week in which the schedule started
-    start_week: StoredIsoWeek,
+    pub(crate) start_week: StoredIsoWeek,
     /// Assignee ids in order of assignment
-    assignees: StoredAssignees,
+    pub(crate) assignees: StoredAssignees,
 }
 
 impl<TDatabase> FromSqlRow<(Text, Integer, Text), TDatabase> for Provider
@@ -42,6 +43,21 @@ where
     }
 }
 
+impl From<Schedule> for Provider {
+    fn from(schedule: Schedule) -> Self {
+        let iso_week = schedule.start_date.iso_week();
+
+        Self {
+            weekly_times: StoredWeeklyTimes(schedule.weekly_times),
+            start_week: StoredIsoWeek {
+                year: iso_week.year(),
+                week: iso_week.week().max(1).min(53) as i32,
+            },
+            assignees: StoredAssignees(schedule.assignees),
+        }
+    }
+}
+
 impl TryInto<Schedule> for Provider {
     type Error = Error;
 
@@ -58,6 +74,44 @@ impl TryInto<Schedule> for Provider {
 mod tests {
     use super::*;
     use chrono::{offset::TimeZone, NaiveTime, Utc, Weekday};
+
+    #[test]
+    fn it_converts_from_schedule() {
+        let schedule = Schedule::new(
+            vec![(
+                Weekday::Mon,
+                vec![
+                    NaiveTime::from_hms(10, 30, 0),
+                    NaiveTime::from_hms(22, 30, 0),
+                ],
+            )]
+            .into_iter()
+            .collect(),
+            Utc.isoywd(2020, 2, Weekday::Mon).and_hms(0, 0, 0),
+            vec![1, 2, 3],
+        );
+
+        let expected_provider = Provider {
+            weekly_times: StoredWeeklyTimes(
+                vec![(
+                    Weekday::Mon,
+                    vec![
+                        NaiveTime::from_hms(10, 30, 0),
+                        NaiveTime::from_hms(22, 30, 0),
+                    ],
+                )]
+                .into_iter()
+                .collect(),
+            ),
+            start_week: StoredIsoWeek {
+                week: 2,
+                year: 2020,
+            },
+            assignees: StoredAssignees(vec![1, 2, 3]),
+        };
+
+        assert_eq!(expected_provider, schedule.into());
+    }
 
     #[test]
     fn it_converts_to_schedule() {

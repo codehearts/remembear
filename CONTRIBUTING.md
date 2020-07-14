@@ -52,6 +52,7 @@ If you're new to Rust, you may find these resources helpful:
   - `main.rs` - Binary entrypoint 
   - `command/` - Command-line interface module
   - `database/` - Database management layer
+  - `reminder/` - Reminder management layer
   - `schedule/` - Stateless schedule management layer
     - `provider/` - Provides schedule data from the database
       - `model/` - Models for serialized schedule data

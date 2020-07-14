@@ -30,7 +30,7 @@ where
 {
     const FIELDS_NEEDED: usize = 5;
 
-    /// Converts a SQLite row to a `Reminder` using `schedule::Provider`
+    /// Converts a `SQLite` row to a `Reminder` using `schedule::Provider`
     fn build_from_row<TRow: diesel::row::Row<TDatabase>>(row: &mut TRow) -> FromSqlResult<Self> {
         Ok(Self {
             uid: i32::build_from_row(row)?,

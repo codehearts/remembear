@@ -10,7 +10,7 @@ use diesel::sql_types::{Integer, Text};
 use diesel::{backend::Backend, row::Row};
 use model::{StoredAssignees, StoredIsoWeek, StoredWeeklyTimes};
 use serde::Deserialize;
-use std::convert::{From, TryInto};
+use std::convert::{From, TryFrom, TryInto};
 
 /// Provides access to scheduling data in persistent storage
 #[derive(Debug, Deserialize, Insertable, PartialEq, Queryable)]
@@ -51,7 +51,7 @@ impl From<Schedule> for Provider {
             weekly_times: StoredWeeklyTimes(schedule.weekly_times),
             start_week: StoredIsoWeek {
                 year: iso_week.year(),
-                week: iso_week.week().max(1).min(53) as i32,
+                week: i32::try_from(iso_week.week().max(1).min(53)).unwrap_or(1),
             },
             assignees: StoredAssignees(schedule.assignees),
         }

@@ -13,11 +13,11 @@ pub type WeeklyTimes = HashMap<Weekday, Vec<NaiveTime>>;
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Schedule {
     /// Scheduled times of day throughout the week
-    weekly_times: WeeklyTimes,
+    pub(crate) weekly_times: WeeklyTimes,
     /// Beginning of the week in which the schedule started
-    start_date: DateTime<Utc>,
+    pub(crate) start_date: DateTime<Utc>,
     /// Assignee ids in order of assignment
-    assignees: Vec<i32>,
+    pub(crate) assignees: Vec<i32>,
 }
 
 impl Schedule {

@@ -11,9 +11,11 @@ extern crate diesel;
 pub mod command;
 pub mod config;
 pub mod database;
+pub mod reminder;
 pub mod schedule;
 pub mod user;
 
+pub use reminder::model::Reminder;
 pub use schedule::model::Schedule;
 pub use user::model::User;
 

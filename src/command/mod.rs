@@ -1,14 +1,16 @@
 //! Commands for the CLI interface
 
+mod reminder;
 mod user;
 
-use crate::user::provider::UserManagement;
 use structopt::StructOpt;
 
 /// Providers for CLI command functionality
 pub struct Providers<'a> {
     /// Provider for user functionality
-    pub user: &'a dyn UserManagement,
+    pub user: &'a dyn crate::user::provider::Providable,
+    /// Provider for reminder functionality
+    pub reminder: &'a dyn crate::reminder::provider::Providable,
 }
 
 /// Interface for executable CLI commands
@@ -27,12 +29,15 @@ pub trait Command {
 pub enum Global {
     /// Manage users
     User(user::User),
+    /// Manage reminders
+    Reminder(reminder::Reminder),
 }
 
 impl Command for Global {
     fn execute(self, providers: Providers) -> Result<String, Box<dyn std::error::Error>> {
         match self {
-            Self::User(user_command) => user_command.execute(providers),
+            Self::User(command) => command.execute(providers),
+            Self::Reminder(command) => command.execute(providers),
         }
     }
 }

@@ -9,9 +9,9 @@ use std::sync::Arc;
 #[cfg(test)]
 use mockall::automock;
 
-/// Provides an interface for user management
+/// Providable interface for user management
 #[cfg_attr(test, automock)]
-pub trait UserManagement {
+pub trait Providable {
     /// Creates a new user in the database
     ///
     /// # Errors
@@ -61,7 +61,7 @@ impl Provider {
     }
 }
 
-impl UserManagement for Provider {
+impl Providable for Provider {
     fn add(&self, user: NewUser) -> Result<User, Error> {
         diesel::insert_into(database::schema::users::table)
             .values(user)

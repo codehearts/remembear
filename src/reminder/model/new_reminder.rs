@@ -4,6 +4,7 @@ use crate::database::schema::reminders;
 use crate::{schedule, Schedule};
 
 /// Necessary data to create a new reminder
+#[derive(Debug, PartialEq)]
 pub struct NewReminder {
     /// Name of the reminder
     pub name: String,

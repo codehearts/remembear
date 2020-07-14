@@ -16,7 +16,7 @@ pub enum User {
     Update {
         /// Uid of the user to update
         uid: i32,
-        ///
+        /// Updated name for the user
         #[structopt(short, long)]
         name: Option<String>,
     },
@@ -73,6 +73,7 @@ mod tests {
     ) -> Result<String, Box<dyn std::error::Error>> {
         let providers = Providers {
             user: user_provider,
+            reminder: &crate::reminder::provider::MockProvidable::new(),
         };
 
         command.execute(providers)

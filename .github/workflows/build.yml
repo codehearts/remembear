@@ -9,73 +9,88 @@ on:
 name: Build
 
 jobs:
-  rustfmt:
-    name: Rustfmt
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
-      - name: Install Rust stable
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-          components: rustfmt
+          components: clippy, rustfmt
+      - uses: actions-rs/install@v0.1
+        with:
+          crate: sccache
+          version: latest
+          use-tool-cache: true
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/sccache
+          key: ${{ runner.os }}-sccache-lint-${{ hashFiles('**/Cargo.lock') }}
       - name: Rustfmt
+        env:
+          RUSTC_WRAPPER: sccache
         run: cargo fmt --all -- --check
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
-      - name: Install Rust stable
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-          components: clippy
       - name: Clippy
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features
+        env:
+          RUSTC_WRAPPER: sccache
+      - run: sccache --show-stats
   test:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
-      - name: Install Rust stable
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-      - name: Install Sqlite3
-        run: sudo apt-get -q update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
+      - uses: actions-rs/install@v0.1
+        with:
+          crate: sccache
+          version: latest
+          use-tool-cache: true
+      - run: sudo apt-get -q update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/sccache
+          key: ${{ runner.os }}-sccache-test-${{ hashFiles('**/Cargo.lock') }}
       - name: Tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
           args: '--all-features --ignored'
         env:
           CARGO_HUSKY_DONT_INSTALL_HOOKS: true
-      - name: Codecov
-        uses: codecov/codecov-action@v1
+          RUSTC_WRAPPER: sccache
+      - uses: codecov/codecov-action@v1
+      - run: sccache --show-stats
 
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
-      - name: Install Rust stable
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-      - name: Install Sqlite3
-        run: sudo apt-get -q update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
+      - uses: actions-rs/install@v0.1
+        with:
+          crate: sccache
+          version: latest
+          use-tool-cache: true
+      - run: sudo apt-get -q update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/sccache
+          key: ${{ runner.os }}-sccache-build-${{ hashFiles('**/Cargo.lock') }}
       - name: Release Build
+        env:
+          RUSTC_WRAPPER: sccache
         run: cargo build --release --all-features
+      - run: sccache --show-stats

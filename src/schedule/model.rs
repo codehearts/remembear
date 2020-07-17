@@ -1,6 +1,6 @@
 //! Data models for a stateless weekly schedule
 
-use chrono::{DateTime, Datelike, NaiveTime, Utc, Weekday};
+use chrono::{DateTime, Datelike, Duration, NaiveTime, Utc, Weekday};
 use serde::Serialize;
 use std::cmp::Ordering;
 use std::collections::HashMap;
@@ -78,6 +78,58 @@ impl Schedule {
         .saturating_sub(1);
 
         self.assignees[index % self.assignees.len()]
+    }
+
+    /// Calculates the duration until the next time on the schedule
+    #[must_use]
+    pub fn get_next_duration(&self, current_time: DateTime<Utc>) -> Option<Duration> {
+        let this_week_day = current_time.weekday().number_from_monday();
+
+        let next_scheduled_day = self
+            .weekly_times
+            .iter()
+            .find(|(week_day, times_in_day)| {
+                match week_day.number_from_monday().cmp(&this_week_day) {
+                    Ordering::Less => false,
+                    Ordering::Equal => {
+                        // Check if the next scheduled time is on the same weekday
+                        times_in_day.iter().any(|time| *time >= current_time.time())
+                    }
+                    Ordering::Greater => true,
+                }
+            })
+            .or_else(|| self.weekly_times.iter().next());
+
+        match next_scheduled_day {
+            Some((next_day, times_in_day)) => {
+                let week_day = next_day.number_from_monday();
+
+                // Determine the number of days that will elapse
+                match (i64::from(week_day) - i64::from(this_week_day)).checked_rem_euclid(7) {
+                    // Same day means either the time between now and the next time,
+                    // or the first time of the day if it wrapped into the next week
+                    Some(days) if days == 0 => times_in_day
+                        .iter()
+                        .find_map(|time| {
+                            Some(time.signed_duration_since(current_time.time()))
+                                .filter(|time| time >= &Duration::zero())
+                        })
+                        .or_else(|| {
+                            times_in_day.get(0).and_then(|time| {
+                                Duration::days(7)
+                                    .checked_sub(&current_time.time().signed_duration_since(*time))
+                            })
+                        }),
+                    // Different days means the time between now and the first time of that day
+                    Some(days) => times_in_day.get(0).and_then(|time| {
+                        Duration::days(days)
+                            .checked_sub(&current_time.time().signed_duration_since(*time))
+                    }),
+                    None => None,
+                }
+            }
+            None => None,
+        }
     }
 }
 
@@ -228,6 +280,147 @@ mod tests {
         // Start of third week
         assert_eq!(2, schedule.get_assignee(datetime("2020-01-27 10:29:59")?));
         assert_eq!(1, schedule.get_assignee(datetime("2020-01-27 10:30:00")?));
+
+        Ok(())
+    }
+
+    #[test]
+    fn it_returns_none_without_next_duration() {
+        let schedule = Schedule::new(vec![].into_iter().collect(), week(2020, 1), vec![]);
+
+        assert_eq!(None, schedule.get_next_duration(Utc::now()));
+    }
+
+    #[test]
+    fn it_returns_0_when_next_duration_is_now() -> Result<()> {
+        let schedule = Schedule::new(
+            vec![(Weekday::Mon, vec![time(12, 30)])]
+                .into_iter()
+                .collect(),
+            week(2020, 1),
+            vec![1],
+        );
+
+        assert_eq!(
+            Some(Duration::zero()),
+            schedule.get_next_duration(datetime("2020-01-06 12:30:00")?)
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn it_returns_remaining_time_when_next_duration_is_same_day() -> Result<()> {
+        let schedule = Schedule::new(
+            vec![(Weekday::Mon, vec![time(12, 30)])]
+                .into_iter()
+                .collect(),
+            week(2020, 1),
+            vec![1],
+        );
+
+        assert_eq!(
+            Some(Duration::minutes(12 * 60 + 30)),
+            schedule.get_next_duration(datetime("2020-01-06 00:00:00")?)
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn it_returns_1_day_when_next_duration_is_next_day_at_same_time() -> Result<()> {
+        let schedule = Schedule::new(
+            vec![(Weekday::Mon, vec![time(12, 30)])]
+                .into_iter()
+                .collect(),
+            week(2020, 1),
+            vec![1],
+        );
+
+        assert_eq!(
+            Some(Duration::days(1)),
+            schedule.get_next_duration(datetime("2020-01-05 12:30:00")?)
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn it_returns_time_gap_when_next_duration_is_less_than_24h() -> Result<()> {
+        let schedule = Schedule::new(
+            vec![(Weekday::Mon, vec![time(12, 30)])]
+                .into_iter()
+                .collect(),
+            week(2020, 1),
+            vec![1],
+        );
+
+        assert_eq!(
+            Some(Duration::seconds(60 * 60 * 24 - 1)),
+            schedule.get_next_duration(datetime("2020-01-05 12:30:01")?)
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn it_returns_time_gap_when_next_duration_wraps_to_next_week() -> Result<()> {
+        let schedule = Schedule::new(
+            vec![(Weekday::Mon, vec![time(12, 30)])]
+                .into_iter()
+                .collect(),
+            week(2020, 1),
+            vec![1],
+        );
+
+        assert_eq!(
+            Some(Duration::seconds(60 * 60 * 24 * 7 - 1)),
+            schedule.get_next_duration(datetime("2020-01-06 12:30:01")?)
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn it_returns_time_gap_when_next_duration_is_a_future_day_of_the_week() -> Result<()> {
+        let schedule = Schedule::new(
+            vec![
+                (Weekday::Mon, vec![time(10, 30)]),
+                (Weekday::Fri, vec![time(20, 30)]),
+            ]
+            .into_iter()
+            .collect(),
+            week(2020, 1),
+            vec![1],
+        );
+
+        assert_eq!(
+            // Next time is 4 days and 10 hours minus 1 second
+            Some(Duration::seconds(60 * 60 * 24 * 4 + 60 * 60 * 10 - 1)),
+            schedule.get_next_duration(datetime("2020-01-06 10:30:01")?)
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn it_returns_time_gap_when_next_duration_is_a_past_day_of_the_week() -> Result<()> {
+        let schedule = Schedule::new(
+            vec![
+                (Weekday::Mon, vec![time(10, 30)]),
+                (Weekday::Fri, vec![time(20, 30)]),
+            ]
+            .into_iter()
+            .collect(),
+            week(2020, 1),
+            vec![1],
+        );
+
+        assert_eq!(
+            // Next time is 2 days and 14 hours minus 1 second
+            Some(Duration::seconds(60 * 60 * 24 * 2 + 60 * 60 * 14 - 1)),
+            schedule.get_next_duration(datetime("2020-01-10 20:30:01")?)
+        );
 
         Ok(())
     }

@@ -95,12 +95,10 @@ async fn it_errors_when_updating_invalid_uid() -> Result<()> {
     let executor = Executor::new()?;
     let output = executor
         .execute(&["remembear", "user", "update", "1", "--name", "Bob"])
-        .await;
+        .await
+        .map_err(|error| error.to_string());
 
-    match output {
-        Ok(_) => panic!("Error was not propagated"),
-        Err(error) => assert_eq!("Invalid uid 1", error.to_string()),
-    };
+    assert_eq!(Some(String::from("Invalid uid 1")), output.err());
 
     Ok(())
 }
@@ -137,12 +135,10 @@ async fn it_errors_when_removing_invalid_uid() -> Result<()> {
     let executor = Executor::new()?;
     let output = executor
         .execute(&["remembear", "user", "remove", "1"])
-        .await;
+        .await
+        .map_err(|error| error.to_string());
 
-    match output {
-        Ok(_) => panic!("Error was not propagated"),
-        Err(error) => assert_eq!("Invalid uid 1", error.to_string()),
-    };
+    assert_eq!(Some(String::from("Invalid uid 1")), output.err());
 
     Ok(())
 }

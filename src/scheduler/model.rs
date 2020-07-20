@@ -119,6 +119,27 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn it_does_nothing_with_empty_schedules() -> Result<()> {
+        let schedule = Schedule::new(
+            vec![].into_iter().collect(),
+            Utc.isoywd(2020, 1, Weekday::Mon).and_hms(0, 0, 0),
+            vec![1],
+        );
+
+        let reminder = Reminder {
+            uid: 1,
+            name: String::from("Reminder"),
+            schedule,
+        };
+
+        let mut scheduler = Scheduler::new(vec![reminder]);
+
+        assert_eq!(None, scheduler.next().await?);
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn it_schedules_multiple_reminders() -> Result<()> {
         let schedule_1 = schedule_from_now(vec![chrono::Duration::milliseconds(5)]);
         eprintln!("schedule 1: {:?}", schedule_1);

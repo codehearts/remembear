@@ -64,3 +64,20 @@ pub async fn execute(
         _ => command.execute(providers),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_does_nothing_when_executing_start_synchronously() -> Result<(), Box<dyn std::error::Error>>
+    {
+        let providers = Providers {
+            user: &crate::user::provider::MockProvidable::new(),
+            reminder: &crate::reminder::provider::MockProvidable::new(),
+        };
+        assert_eq!(String::from(""), Global::Start.execute(providers)?);
+
+        Ok(())
+    }
+}

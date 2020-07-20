@@ -3,17 +3,22 @@
 use chrono::{DateTime, Datelike, Duration, NaiveTime, Utc, Weekday};
 use serde::Serialize;
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::convert::TryFrom;
 
 /// Mapping of weekdays to a list of times
 pub type WeeklyTimes = HashMap<Weekday, Vec<NaiveTime>>;
+
+/// Sorted mapping of weekdays to a list of times
+type SortedWeeklyTimes = BTreeMap<u32, Vec<NaiveTime>>;
 
 /// Stateless weekly schedule with support for rotating assignees
 #[derive(Debug, PartialEq, Serialize)]
 pub struct Schedule {
     /// Scheduled times of day throughout the week
     pub(crate) weekly_times: WeeklyTimes,
+    /// Sorted array of scheduled weekdays, for internal use
+    sorted_weekdays: SortedWeeklyTimes,
     /// Beginning of the week in which the schedule started
     pub(crate) start_date: DateTime<Utc>,
     /// Assignee ids in order of assignment
@@ -28,8 +33,14 @@ impl Schedule {
     /// When the given start week is invalid or ambiguous
     #[must_use]
     pub fn new(weekly_times: WeeklyTimes, start_date: DateTime<Utc>, assignees: Vec<i32>) -> Self {
+        let sorted_weekdays = weekly_times
+            .iter()
+            .map(|(weekday, times)| (weekday.number_from_monday(), times.clone()))
+            .collect();
+
         Schedule {
             weekly_times,
+            sorted_weekdays,
             start_date,
             assignees,
         }
@@ -54,13 +65,10 @@ impl Schedule {
         // Number of fully elapsed time periods in this week
         let this_week_day = current_time.weekday();
         let times_in_this_week: usize = self
-            .weekly_times
+            .sorted_weekdays
             .iter()
             .map(|(week_day, times_in_day)| {
-                match week_day
-                    .number_from_monday()
-                    .cmp(&this_week_day.number_from_monday())
-                {
+                match week_day.cmp(&this_week_day.number_from_monday()) {
                     Ordering::Less => times_in_day.len(),
                     Ordering::Equal => times_in_day
                         .iter()
@@ -86,10 +94,10 @@ impl Schedule {
         let this_week_day = current_time.weekday().number_from_monday();
 
         let next_scheduled_day = self
-            .weekly_times
+            .sorted_weekdays
             .iter()
             .find(|(week_day, times_in_day)| {
-                match week_day.number_from_monday().cmp(&this_week_day) {
+                match week_day.cmp(&&this_week_day) {
                     Ordering::Less => false,
                     Ordering::Equal => {
                         // Check if the next scheduled time is on the same weekday
@@ -98,14 +106,12 @@ impl Schedule {
                     Ordering::Greater => true,
                 }
             })
-            .or_else(|| self.weekly_times.iter().next());
+            .or_else(|| self.sorted_weekdays.iter().next());
 
         match next_scheduled_day {
-            Some((next_day, times_in_day)) => {
-                let week_day = next_day.number_from_monday();
-
+            Some((week_day, times_in_day)) => {
                 // Determine the number of days that will elapse
-                match (i64::from(week_day) - i64::from(this_week_day)).checked_rem_euclid(7) {
+                match (i64::from(*week_day) - i64::from(this_week_day)).checked_rem_euclid(7) {
                     // Same day means either the time between now and the next time,
                     // or the first time of the day if it wrapped into the next week
                     Some(days) if days == 0 => times_in_day

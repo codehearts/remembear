@@ -13,10 +13,13 @@ pub mod config;
 pub mod database;
 pub mod reminder;
 pub mod schedule;
+pub mod scheduler;
 pub mod user;
 
+pub use command::execute;
 pub use reminder::model::Reminder;
 pub use schedule::model::Schedule;
+pub use scheduler::model::Scheduler;
 pub use user::model::User;
 
 use crate::config::Config;

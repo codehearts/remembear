@@ -8,11 +8,13 @@ use common::Result;
 use common_command::Executor;
 use remembear::User;
 
-#[test]
-fn it_outputs_added_user() -> Result<()> {
+#[tokio::test]
+async fn it_outputs_added_user() -> Result<()> {
     let executor = Executor::new()?;
 
-    let output = executor.execute(&["remembear", "user", "add", "Laura"])?;
+    let output = executor
+        .execute(&["remembear", "user", "add", "Laura"])
+        .await?;
     let expected_output = serde_json::to_string_pretty(&User {
         uid: 1,
         name: String::from("Laura"),
@@ -23,15 +25,21 @@ fn it_outputs_added_user() -> Result<()> {
     Ok(())
 }
 
-#[test]
-fn it_lists_all_users() -> Result<()> {
+#[tokio::test]
+async fn it_lists_all_users() -> Result<()> {
     let executor = Executor::new()?;
 
-    executor.execute(&["remembear", "user", "add", "Laura"])?;
-    executor.execute(&["remembear", "user", "add", "Leland"])?;
-    executor.execute(&["remembear", "user", "add", "Sarah"])?;
+    executor
+        .execute(&["remembear", "user", "add", "Laura"])
+        .await?;
+    executor
+        .execute(&["remembear", "user", "add", "Leland"])
+        .await?;
+    executor
+        .execute(&["remembear", "user", "add", "Sarah"])
+        .await?;
 
-    let output = executor.execute(&["remembear", "user", "list"])?;
+    let output = executor.execute(&["remembear", "user", "list"]).await?;
 
     let expected_output = serde_json::to_string_pretty(&vec![
         User {
@@ -53,12 +61,16 @@ fn it_lists_all_users() -> Result<()> {
     Ok(())
 }
 
-#[test]
-fn it_updates_users() -> Result<()> {
+#[tokio::test]
+async fn it_updates_users() -> Result<()> {
     let executor = Executor::new()?;
-    executor.execute(&["remembear", "user", "add", "Leland"])?;
+    executor
+        .execute(&["remembear", "user", "add", "Leland"])
+        .await?;
 
-    let output = executor.execute(&["remembear", "user", "update", "1", "--name", "Bob"])?;
+    let output = executor
+        .execute(&["remembear", "user", "update", "1", "--name", "Bob"])
+        .await?;
 
     let expected_user = User {
         uid: 1,
@@ -69,7 +81,7 @@ fn it_updates_users() -> Result<()> {
 
     assert_eq!(expected_output, output);
 
-    let list_output = executor.execute(&["remembear", "user", "list"])?;
+    let list_output = executor.execute(&["remembear", "user", "list"]).await?;
 
     let expected_list_output = serde_json::to_string_pretty(&vec![expected_user])?;
 
@@ -78,25 +90,29 @@ fn it_updates_users() -> Result<()> {
     Ok(())
 }
 
-#[test]
-fn it_errors_when_updating_invalid_uid() -> Result<()> {
+#[tokio::test]
+async fn it_errors_when_updating_invalid_uid() -> Result<()> {
     let executor = Executor::new()?;
-    let output = executor.execute(&["remembear", "user", "update", "1", "--name", "Bob"]);
+    let output = executor
+        .execute(&["remembear", "user", "update", "1", "--name", "Bob"])
+        .await
+        .map_err(|error| error.to_string());
 
-    match output {
-        Ok(_) => panic!("Error was not propagated"),
-        Err(error) => assert_eq!("Invalid uid 1", error.to_string()),
-    };
+    assert_eq!(Some(String::from("Invalid uid 1")), output.err());
 
     Ok(())
 }
 
-#[test]
-fn it_removes_users() -> Result<()> {
+#[tokio::test]
+async fn it_removes_users() -> Result<()> {
     let executor = Executor::new()?;
-    executor.execute(&["remembear", "user", "add", "Leland"])?;
+    executor
+        .execute(&["remembear", "user", "add", "Leland"])
+        .await?;
 
-    let output = executor.execute(&["remembear", "user", "remove", "1"])?;
+    let output = executor
+        .execute(&["remembear", "user", "remove", "1"])
+        .await?;
 
     let expected_output = serde_json::to_string_pretty(&User {
         uid: 1,
@@ -105,7 +121,7 @@ fn it_removes_users() -> Result<()> {
 
     assert_eq!(expected_output, output);
 
-    let list_output = executor.execute(&["remembear", "user", "list"])?;
+    let list_output = executor.execute(&["remembear", "user", "list"]).await?;
 
     let expected_list_output = serde_json::to_string_pretty::<Vec<User>>(&Vec::new())?;
 
@@ -114,15 +130,15 @@ fn it_removes_users() -> Result<()> {
     Ok(())
 }
 
-#[test]
-fn it_errors_when_removing_invalid_uid() -> Result<()> {
+#[tokio::test]
+async fn it_errors_when_removing_invalid_uid() -> Result<()> {
     let executor = Executor::new()?;
-    let output = executor.execute(&["remembear", "user", "remove", "1"]);
+    let output = executor
+        .execute(&["remembear", "user", "remove", "1"])
+        .await
+        .map_err(|error| error.to_string());
 
-    match output {
-        Ok(_) => panic!("Error was not propagated"),
-        Err(error) => assert_eq!("Invalid uid 1", error.to_string()),
-    };
+    assert_eq!(Some(String::from("Invalid uid 1")), output.err());
 
     Ok(())
 }

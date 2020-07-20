@@ -2,7 +2,7 @@
 
 use super::common::Result;
 use super::common_database;
-use remembear::{command, command::Command, reminder, user};
+use remembear::{command, reminder, user};
 use structopt::StructOpt;
 
 /// Provides a simple interface for executing CLI commands
@@ -23,10 +23,14 @@ impl Executor {
     }
 
     /// Executes a CLI command
-    pub fn execute(&self, command: &[&str]) -> Result<String> {
-        command::Global::from_iter(command).execute(command::Providers {
-            user: &self.user,
-            reminder: &self.reminder,
-        })
+    pub async fn execute(&self, command: &[&str]) -> Result<String> {
+        remembear::execute(
+            command::Global::from_iter(command),
+            command::Providers {
+                user: &self.user,
+                reminder: &self.reminder,
+            },
+        )
+        .await
     }
 }

@@ -24,6 +24,7 @@ Remembear is still under active development but will be available as a binary an
   - List: Lists all reminders as a JSON array (`remembear reminder list`)
   - Update: Updates an existing reminder (`remembear reminder update <uid> [-n|--name name] [-s|--schedule schedule] [-a|--assignees assignees..]`)
   - Remove: Removes a reminder by its uid (`remembear reminder remove <uid>`)
+- Start: Starts the scheduler, running until the process is killed
 
 Note that schedules are in the following format:
 

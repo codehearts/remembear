@@ -3,6 +3,7 @@
 mod reminder;
 mod user;
 
+use crate::Scheduler;
 use structopt::StructOpt;
 
 /// Providers for CLI command functionality
@@ -31,6 +32,8 @@ pub enum Global {
     User(user::User),
     /// Manage reminders
     Reminder(reminder::Reminder),
+    /// Start the scheduler
+    Start,
 }
 
 impl Command for Global {
@@ -38,6 +41,26 @@ impl Command for Global {
         match self {
             Self::User(command) => command.execute(providers),
             Self::Reminder(command) => command.execute(providers),
+            Self::Start => Ok(String::from("")),
         }
+    }
+}
+
+/// Executes the given global command
+///
+/// # Errors
+///
+/// If the scheduler is started and a reminder is triggered when the queue is empty
+pub async fn execute(
+    command: Global,
+    providers: Providers<'_>,
+) -> Result<String, Box<dyn std::error::Error>> {
+    match command {
+        Global::Start => {
+            let mut scheduler = Scheduler::new(providers.reminder.get_all()?);
+            scheduler.run().await?;
+            Ok(String::from("Scheduler queue is empty"))
+        }
+        _ => command.execute(providers),
     }
 }

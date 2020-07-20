@@ -1,10 +1,11 @@
-use remembear::command::{self, Command};
+use remembear::command::{self, execute};
 use remembear::{initialize_dependencies, reminder, user};
 use std::error::Error;
 use std::sync::Arc;
 use structopt::StructOpt;
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
     let command = command::Global::from_args();
     let dependencies = initialize_dependencies()?;
 
@@ -16,7 +17,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         reminder: &reminder_provider,
     };
 
-    match command.execute(providers) {
+    match execute(command, providers).await {
         Ok(output) => println!("{}", output),
         Err(error) => eprintln!("{}", error),
     };

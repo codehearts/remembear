@@ -16,6 +16,7 @@ pub mod schedule;
 pub mod scheduler;
 pub mod user;
 
+pub use command::execute;
 pub use reminder::model::Reminder;
 pub use schedule::model::Schedule;
 pub use scheduler::model::Scheduler;

@@ -56,6 +56,7 @@ If you're new to Rust, you may find these resources helpful:
   - `schedule/` - Stateless schedule management layer
     - `provider/` - Provides schedule data from the database
       - `model/` - Models for serialized schedule data
+  - `scheduler/` - Real-time reminder scheduling layer
   - `user/` - User management layer
     - `error.rs` - Custom failure types for user data
     - `model.rs` - Database-compatible structures for user data

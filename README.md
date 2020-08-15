@@ -10,6 +10,20 @@ Remembear was created to manage household chores but can be used for medication 
 
 Remembear is still under active development but will be available as a binary and Docker container once released. Until then, you can check out the [contributor guidelines](https://github.com/codehearts/remembear/blob/master/CONTRIBUTING.md) for steps to build and run remembear locally
 
+## Configuration
+
+Remembear is configured by `remembear.yml` in the directory it's run from. A default configuration file is provided by this repo
+
+### Integrations
+
+Integrations can be configured by defining them in an `integrations` section in `remembear.yml`. To use an integration, `enabled` _must_ be set to `true`:
+
+```yaml
+integrations:
+  console:
+    enabled: true
+```
+
 ## Usage
 
 ### CLI Usage
@@ -45,6 +59,15 @@ Note that schedules are in UTC and use the following format:
   "wed": ["10:00:00", "22:00:00"]
 }
 ```
+
+#### Integrations
+
+##### Console
+
+Subcommand | Description | Usage
+---------- | ----------- | -----
+Color | Sets the color to display a user's name in | `remembear integration console color <uid> <color_word>`
+Remove | Removes the color set for a user | `remembear integration console remove <uid>`
 
 ## Development
 

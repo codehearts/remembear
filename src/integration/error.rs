@@ -2,6 +2,7 @@
 
 use diesel::result::Error as DieselError;
 use serde_json::Error as JSONError;
+use structopt::clap::Error as ClapError;
 use thiserror::Error;
 
 /// Integration errors
@@ -16,4 +17,7 @@ pub enum Error {
     /// A JSON deserialization error occurred
     #[error("Failed to deserialize JSON: {0}")]
     JSONDeserialization(#[from] JSONError),
+    /// A command line parsing error occurred
+    #[error("Failed to parse command line arguments: {0}")]
+    Command(#[from] ClapError),
 }

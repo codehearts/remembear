@@ -1,11 +1,14 @@
 //! Models and functionality for remembear integrations
 
-mod error;
 pub mod model;
 pub mod provider;
 
+pub use console::Console;
 pub use error::Error;
 pub use provider::Provider;
+
+mod console;
+mod error;
 
 use crate::{config, Config, Providers, Reminder, User};
 use chrono::{DateTime, Utc};
@@ -59,6 +62,14 @@ impl Integrations {
     #[must_use]
     pub fn new(config: &Config) -> Self {
         let mut integrations: BTreeMap<&'static str, Box<dyn Integration>> = BTreeMap::new();
+
+        if let Some(configs) = &config.integrations {
+            if Self::get_enabled_config(configs, "console").is_some() {
+                let integration = Console(Box::new(std::io::stdout()));
+                integrations.insert(integration.name(), Box::new(integration));
+            }
+        }
+
         Self(integrations)
     }
 

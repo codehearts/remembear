@@ -5,12 +5,15 @@ pub mod error;
 use config::{Config as GenericConfig, File as ConfigFile};
 use error::Error;
 use serde::Deserialize;
+use std::collections::BTreeMap;
 
 /// All configurable properties of the app
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct Config {
     /// Configuration for the database
     pub database: Database,
+    /// Optional configuration for individual integrations
+    pub integrations: Option<Integrations>,
 }
 
 /// All configurable database properties
@@ -26,6 +29,12 @@ pub struct SqliteDatabase {
     /// Path to the sqlite database
     pub path: String,
 }
+
+/// All configured integrations
+pub type Integrations = BTreeMap<String, Integration>;
+
+/// An individual integration's configuration
+pub type Integration = BTreeMap<String, String>;
 
 impl Config {
     /// Reads the configuration into memory from remembear.yaml

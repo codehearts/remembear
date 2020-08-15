@@ -141,9 +141,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn it_runs_known_integrations() -> Result<(), Box<dyn std::error::Error>>
-    {
-        let config: Config = serde_json::from_str(r#"{
+    async fn it_runs_known_integrations() -> Result<(), Box<dyn std::error::Error>> {
+        let config: Config = serde_json::from_str(
+            r#"{
             "database": {
                 "sqlite": {
                     "path": "remembear.sqlite3"
@@ -154,7 +154,8 @@ mod tests {
                     "enabled": "true"
                 }
             }
-        }"#)?;
+        }"#,
+        )?;
 
         let command = Global::Integration(vec![String::from("integration"), String::from("known")]);
 

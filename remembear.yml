@@ -1,3 +1,6 @@
 database:
   sqlite:
     path: remembear.sqlite3
+integrations:
+  console:
+    enabled: true

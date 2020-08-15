@@ -30,6 +30,7 @@ impl Executor {
                 user: &self.user,
                 reminder: &self.reminder,
             },
+            Integrations::default(),
         )
         .await
     }

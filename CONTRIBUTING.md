@@ -47,20 +47,26 @@ If you're new to Rust, you may find these resources helpful:
 
 ## :herb: Project Structure
 
+This project uses a data provider model, with most modules being organized into these three files:
+
+- `error.rs` - Error types specific to the module
+- `model.rs` - Models, usually structs, for representing the module's data
+- `provider.rs` - Utilizes dependencies like the database to provide model data
+
+The overall project structure is as follows:
+
 - `src/` - Source code
   - `lib.rs` - Library entrypoint
   - `main.rs` - Binary entrypoint 
   - `command/` - Command-line interface module
-  - `database/` - Database management layer
-  - `reminder/` - Reminder management layer
-  - `schedule/` - Stateless schedule management layer
+  - `database/` - Database integration
+  - `integration/` - Integrations with external services
+  - `reminder/` - Reminder datatypes
+  - `schedule/` - Stateless schedule datatype
     - `provider/` - Provides schedule data from the database
       - `model/` - Models for serialized schedule data
-  - `scheduler/` - Real-time reminder scheduling layer
-  - `user/` - User management layer
-    - `error.rs` - Custom failure types for user data
-    - `model.rs` - Database-compatible structures for user data
-    - `provider.rs` - Provides user data, abstracting away the database dependency
+  - `scheduler/` - Real-time reminder scheduler
+  - `user/` - User datatypes
 - `tests/` - Integration tests
   - `assets/` - Integration test assets
   - `common/` - Common integration test functionality

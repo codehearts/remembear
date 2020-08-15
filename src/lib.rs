@@ -11,6 +11,7 @@ extern crate diesel;
 pub mod command;
 pub mod config;
 pub mod database;
+pub mod integration;
 pub mod reminder;
 pub mod schedule;
 pub mod scheduler;
@@ -18,6 +19,7 @@ pub mod user;
 
 pub use crate::config::Config;
 pub use command::execute;
+pub use integration::{Integration, Integrations};
 pub use reminder::model::Reminder;
 pub use schedule::model::Schedule;
 pub use scheduler::model::Scheduler;
@@ -44,7 +46,6 @@ impl Dependencies {
 
         Ok(Self { database })
     }
-}
 }
 
 /// Providers for service data

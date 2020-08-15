@@ -14,10 +14,10 @@ Remembear is still under active development but will be available as a binary an
 
 ### CLI Usage
 
-
 Subcommand | Description | Usage
 ---------- | ----------- | -----
 Start | Starts the scheduler, running until the process is killed | `remembear start`
+Integration | Provides a per-integration CLI interface | `remembear integration <integration> [subcommand..]`
 
 #### Users
 

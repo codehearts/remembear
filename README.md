@@ -14,19 +14,30 @@ Remembear is still under active development but will be available as a binary an
 
 ### CLI Usage
 
-- User
-  - Add: Adds a new user (`remembear user add <name>`)
-  - List: Lists all users as a JSON array (`remembear user list`)
-  - Update: Updates an existing user (`remembear user update <uid> [-n name]`)
-  - Remove: Removes a user by their uid (`remembear user remove <uid>`)
-- Reminder
-  - Add: Adds a new reminder (`remembear reminder add <name> <schedule> [assignees..]`)
-  - List: Lists all reminders as a JSON array (`remembear reminder list`)
-  - Update: Updates an existing reminder (`remembear reminder update <uid> [-n|--name name] [-s|--schedule schedule] [-a|--assignees assignees..]`)
-  - Remove: Removes a reminder by its uid (`remembear reminder remove <uid>`)
-- Start: Starts the scheduler, running until the process is killed
 
-Note that schedules are in the following format:
+Subcommand | Description | Usage
+---------- | ----------- | -----
+Start | Starts the scheduler, running until the process is killed | `remembear start`
+
+#### Users
+
+Subcommand | Description | Usage
+---------- | ----------- | -----
+Add | Adds a new user | `remembear user add <name>`
+List | Lists all users as a JSON array | `remembear user list`
+Update | Updates an existing user | `remembear user update <uid> [-n name]`
+Remove | Removes a user by their uid | `remembear user remove <uid>`
+
+#### Reminders
+
+Subcommand | Description | Usage
+---------- | ----------- | -----
+Add | Adds a new reminder | `remembear reminder add <name> <schedule> [assignees..]`
+List | Lists all reminders as a JSON array | `remembear reminder list`
+Update | Updates an existing reminder | `remembear reminder update <uid> [-n\|--name name] [-s\|--schedule schedule] [-a\|--assignees assignees..]`
+Remove | Removes a reminder by its uid | `remembear reminder remove <uid>`
+
+Note that schedules are in UTC and use the following format:
 
 ```
 {

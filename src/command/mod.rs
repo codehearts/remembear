@@ -3,16 +3,8 @@
 mod reminder;
 mod user;
 
-use crate::Scheduler;
+use crate::{Providers, Scheduler};
 use structopt::StructOpt;
-
-/// Providers for CLI command functionality
-pub struct Providers<'a> {
-    /// Provider for user functionality
-    pub user: &'a dyn crate::user::provider::Providable,
-    /// Provider for reminder functionality
-    pub reminder: &'a dyn crate::reminder::provider::Providable,
-}
 
 /// Interface for executable CLI commands
 pub trait Command {

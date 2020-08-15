@@ -26,7 +26,7 @@ impl Executor {
     pub async fn execute(&self, command: &[&str]) -> Result<String> {
         remembear::execute(
             command::Global::from_iter(command),
-            command::Providers {
+            Providers {
                 user: &self.user,
                 reminder: &self.reminder,
             },

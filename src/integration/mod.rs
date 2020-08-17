@@ -1,5 +1,12 @@
 //! Models and functionality for remembear integrations
 
+mod error;
+pub mod model;
+pub mod provider;
+
+pub use error::Error;
+pub use provider::Provider;
+
 use crate::{config, Config, Providers, Reminder, User};
 use chrono::{DateTime, Utc};
 use std::collections::BTreeMap;

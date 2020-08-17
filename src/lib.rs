@@ -54,4 +54,6 @@ pub struct Providers<'a> {
     pub user: &'a dyn crate::user::provider::Providable,
     /// Provider for reminder data
     pub reminder: &'a dyn crate::reminder::provider::Providable,
+    /// Provider for integration data
+    pub integration: &'a dyn crate::integration::provider::Providable,
 }

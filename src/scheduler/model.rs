@@ -165,7 +165,13 @@ mod tests {
             schedule,
         };
 
-        let mut scheduler = Scheduler::new(vec![reminder]);
+        let providers = Providers {
+            user: &crate::user::provider::MockProvidable::new(),
+            reminder: &crate::reminder::provider::MockProvidable::new(),
+            integration: &crate::integration::provider::MockProvidable::new(),
+        };
+
+        let mut scheduler = Scheduler::new(vec![reminder], providers, Integrations::default());
 
         assert_eq!(None, scheduler.next().await?);
 
@@ -193,7 +199,13 @@ mod tests {
             },
         ];
 
-        let mut scheduler = Scheduler::new(reminders);
+        let providers = Providers {
+            user: &crate::user::provider::MockProvidable::new(),
+            reminder: &crate::reminder::provider::MockProvidable::new(),
+            integration: &crate::integration::provider::MockProvidable::new(),
+        };
+
+        let mut scheduler = Scheduler::new(reminders, providers, Integrations::default());
 
         // The first reminder should be scheduled, then the second
         assert_eq!(Some(1), scheduler.next().await?);
@@ -218,7 +230,13 @@ mod tests {
             schedule,
         }];
 
-        let mut scheduler = Scheduler::new(reminders);
+        let providers = Providers {
+            user: &crate::user::provider::MockProvidable::new(),
+            reminder: &crate::reminder::provider::MockProvidable::new(),
+            integration: &crate::integration::provider::MockProvidable::new(),
+        };
+
+        let mut scheduler = Scheduler::new(reminders, providers, Integrations::default());
 
         // The reminder should be rescheduled to occur a second time
         assert_eq!(Some(1), scheduler.next().await?);
@@ -227,29 +245,34 @@ mod tests {
         Ok(())
     }
 
+    /// Returns a user with uid 1 for testing
+    fn test_user() -> User {
+        User {
+            uid: 1,
+            name: String::from("Laura"),
+        }
+    }
+
+    /// Returns a reminder named "Reminder" with uid 1 assigned
+    fn test_reminder(timestamp: DateTime<Utc>) -> Reminder {
+        let schedule = schedule_from_timestamp(timestamp, vec![chrono::Duration::milliseconds(5)]);
+
+        Reminder {
+            uid: 1,
+            name: String::from("Reminder"),
+            schedule,
+        }
+    }
+
     #[tokio::test]
     async fn it_notifies_integrations_with_reminders() -> Result<()> {
         let current_timestamp = Utc::now();
-        let get_reminder = || {
-            let schedule =
-                schedule_from_timestamp(current_timestamp, vec![chrono::Duration::milliseconds(5)]);
-            Reminder {
-                uid: 1,
-                name: String::from("Reminder"),
-                schedule,
-            }
-        };
 
         let mut mock_user_provider = crate::user::provider::MockProvidable::new();
         mock_user_provider
             .expect_get_by_uid()
             .with(eq(1))
-            .return_once(|_| {
-                Ok(User {
-                    uid: 1,
-                    name: String::from("Laura"),
-                })
-            })
+            .returning(|_| Ok(test_user()))
             .times(1);
 
         let providers = Providers {
@@ -265,20 +288,21 @@ mod tests {
             .expect_notify()
             .with(
                 always(),
-                eq(get_reminder()),
-                eq(vec![User {
-                    uid: 1,
-                    name: String::from("Laura"),
-                }]),
+                eq(test_reminder(current_timestamp)),
+                function(|users: &[User]| users[0] == test_user()),
                 gt(Utc::now()),
             )
-            .return_once(|_, _, _, _| Ok(()))
+            .returning(|_, _, _, _| Ok(()))
             .times(1);
 
         let mut integrations = Integrations::default();
         integrations.insert("mock", Box::new(mock_integration));
 
-        let mut scheduler = Scheduler::new(vec![get_reminder()], providers, integrations);
+        let mut scheduler = Scheduler::new(
+            vec![test_reminder(current_timestamp)],
+            providers,
+            integrations,
+        );
 
         // Run the scheduler for one tick
         scheduler.next().await?;
@@ -289,26 +313,12 @@ mod tests {
     #[tokio::test]
     async fn it_continues_when_an_integration_fails() -> Result<()> {
         let current_timestamp = Utc::now();
-        let get_reminder = || {
-            let schedule =
-                schedule_from_timestamp(current_timestamp, vec![chrono::Duration::milliseconds(5)]);
-            Reminder {
-                uid: 1,
-                name: String::from("Reminder"),
-                schedule,
-            }
-        };
 
         let mut mock_user_provider = crate::user::provider::MockProvidable::new();
         mock_user_provider
             .expect_get_by_uid()
             .with(eq(1))
-            .return_once(|_| {
-                Ok(User {
-                    uid: 1,
-                    name: String::from("Laura"),
-                })
-            })
+            .returning(|_| Ok(test_user()))
             .times(1);
 
         let providers = Providers {
@@ -324,20 +334,21 @@ mod tests {
             .expect_notify()
             .with(
                 always(),
-                eq(get_reminder()),
-                eq(vec![User {
-                    uid: 1,
-                    name: String::from("Laura"),
-                }]),
+                eq(test_reminder(current_timestamp)),
+                function(|users: &[User]| users[0] == test_user()),
                 gt(Utc::now()),
             )
-            .return_once(|_, _, _, _| Err(Box::new(Error::Unavailable(1))))
+            .returning(|_, _, _, _| Err(Box::new(Error::Unavailable(1))))
             .times(1);
 
         let mut integrations = Integrations::default();
         integrations.insert("mock", Box::new(mock_integration));
 
-        let mut scheduler = Scheduler::new(vec![get_reminder()], providers, integrations);
+        let mut scheduler = Scheduler::new(
+            vec![test_reminder(current_timestamp)],
+            providers,
+            integrations,
+        );
 
         // Run the scheduler for one tick, which should return Ok
         scheduler.next().await?;

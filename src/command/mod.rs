@@ -84,6 +84,7 @@ mod tests {
         let providers = Providers {
             user: &crate::user::provider::MockProvidable::new(),
             reminder: &crate::reminder::provider::MockProvidable::new(),
+            integration: &crate::integration::provider::MockProvidable::new(),
         };
         assert_eq!(String::from(""), Global::Start.execute(providers)?);
 

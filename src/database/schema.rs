@@ -1,6 +1,20 @@
 //! Diesel-generated schemas for database tables
 
 table! {
+    /// Records for external service integrations
+    integrations (uid, uid_type, name) {
+        /// Unique identifier for the entity this record applies to
+        uid -> Integer,
+        /// Type of entity which the UID represents
+        uid_type -> Text,
+        /// Name of the integration
+        name -> Text,
+        /// JSON object of integration-specific data
+        data -> Text,
+    }
+}
+
+table! {
     /// Records for active reminders
     reminders (uid) {
         /// Unique identifier for the reminder record

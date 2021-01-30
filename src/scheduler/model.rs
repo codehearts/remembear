@@ -40,12 +40,10 @@ impl<'a> Scheduler<'a> {
         let scheduled_reminders = reminders
             .into_iter()
             .filter_map(|reminder| {
-                if let Some(instant) = get_next_instant(&reminder) {
+                get_next_instant(&reminder).map(|instant| {
                     let key = queue.insert_at(reminder.uid, instant);
-                    Some((reminder.uid, ScheduledReminder { reminder, key }))
-                } else {
-                    None
-                }
+                    (reminder.uid, ScheduledReminder { reminder, key })
+                })
             })
             .collect();
 
@@ -71,7 +69,7 @@ impl<'a> Scheduler<'a> {
             let entity = self
                 .reminders
                 .get_mut(&uid)
-                .ok_or_else(|| Error::Unavailable(uid))?;
+                .ok_or(Error::Unavailable(uid))?;
 
             // Notify integrations
             if !self.integrations.is_empty() {

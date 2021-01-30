@@ -29,6 +29,7 @@ pub trait Integration {
     /// # Errors
     ///
     /// When command-line argument parsing fails
+    #[allow(clippy::needless_lifetimes)] // 'a is needed for mockall test target
     fn execute<'a>(
         &self,
         providers: Providers<'a>,

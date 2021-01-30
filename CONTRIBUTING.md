@@ -6,6 +6,7 @@ Remembear is a Rust library which can be built as a binary application. This gui
   - [Helpful Resources](#helpful-resources)
 - [:herb: Project Structure](#herb-project-structure)
 - [:computer: Development](#computer-development)
+  - [Adding Service Integrations](#adding-service-integrations)
   - [Unit Tests](#unit-tests)
   - [Integration Tests](#integration-tests)
 - [:incoming_envelope: Submitting Changes](#incoming_envelope-submitting-changes)
@@ -80,6 +81,20 @@ The overall project structure is as follows:
 Remembear is written with the latest stable version of Rust and makes extensive use of these crates:
 
 - [Diesel](http://diesel.rs) for persistent storage with sqlite3
+
+### Adding Service Integrations
+
+Integration with external services can be added with support for local storage.
+
+1. Create a directory for your integration in `src/integration/`
+1. Implement the `Integration` trait
+  - `name` should return a name for your integration
+  - `execute` is where you can implement a CLI interface for your integration
+  - `notify` is called when a scheduled reminder goes off. This is where you'll integrate with the external service and do something with the reminder.
+1. Initialize your integration in `Integrations::new()`
+1. Last but not least, enable your integration in `remembear.yml`!
+
+You can look at `src/integration/console/` for an example which writes to stdout, with support for setting colors for assignees in the database via a CLI interface.
 
 ### Unit Tests
 

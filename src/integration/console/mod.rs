@@ -109,7 +109,7 @@ mod tests {
         let timestamp = Utc.ymd(2020, 1, 1).and_hms(0, 1, 2);
         let local_timestamp = timestamp.with_timezone(&Local).format("%F %T%z");
 
-        let assignees = "\u{1b}[31mLaura\u{1b}[0m, \u{1b}[32mDonna\u{1b}[0m";
+        let assignees = format!("{}, {}", "Laura".color("red"), "Donna".color("green"));
 
         let config_1 = Ok(serde_json::json!({"color": "red"}));
         let config_2 = Ok(serde_json::json!({"color": "green"}));

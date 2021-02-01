@@ -155,6 +155,7 @@ mod tests {
         let providers = Providers {
             user: &crate::user::provider::MockProvidable::new(),
             reminder: reminder_provider,
+            integration: &crate::integration::provider::MockProvidable::new(),
         };
 
         command.execute(providers)

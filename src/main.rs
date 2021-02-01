@@ -1,5 +1,5 @@
-use remembear::command::{self, execute};
-use remembear::{initialize_dependencies, reminder, user};
+use remembear::{command, command::execute, integration, reminder, user};
+use remembear::{Config, Dependencies, Integrations, Providers};
 use std::error::Error;
 use std::sync::Arc;
 use structopt::StructOpt;
@@ -7,17 +7,22 @@ use structopt::StructOpt;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let command = command::Global::from_args();
-    let dependencies = initialize_dependencies()?;
+
+    let config = Config::load("remembear")?;
+    let dependencies = Dependencies::new(&config)?;
+    let integrations = Integrations::new(&config);
 
     let user_provider = user::Provider::new(Arc::clone(&dependencies.database));
     let reminder_provider = reminder::Provider::new(Arc::clone(&dependencies.database));
+    let integration_provider = integration::Provider::new(Arc::clone(&dependencies.database));
 
-    let providers = command::Providers {
+    let providers = Providers {
         user: &user_provider,
         reminder: &reminder_provider,
+        integration: &integration_provider,
     };
 
-    match execute(command, providers).await {
+    match execute(command, providers, integrations).await {
         Ok(output) => println!("{}", output),
         Err(error) => eprintln!("{}", error),
     };

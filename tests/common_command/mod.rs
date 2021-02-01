@@ -2,13 +2,14 @@
 
 use super::common::Result;
 use super::common_database;
-use remembear::{command, reminder, user};
+use remembear::{command, integration, reminder, user, Integrations, Providers};
 use structopt::StructOpt;
 
 /// Provides a simple interface for executing CLI commands
 pub struct Executor {
     user: user::Provider,
     reminder: reminder::Provider,
+    integration: integration::Provider,
 }
 
 impl Executor {
@@ -19,6 +20,7 @@ impl Executor {
         Ok(Self {
             user: user::Provider::new(database.clone()),
             reminder: reminder::Provider::new(database.clone()),
+            integration: integration::Provider::new(database.clone()),
         })
     }
 
@@ -26,10 +28,12 @@ impl Executor {
     pub async fn execute(&self, command: &[&str]) -> Result<String> {
         remembear::execute(
             command::Global::from_iter(command),
-            command::Providers {
+            Providers {
                 user: &self.user,
                 reminder: &self.reminder,
+                integration: &self.integration,
             },
+            Integrations::default(),
         )
         .await
     }

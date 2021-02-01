@@ -10,23 +10,48 @@ Remembear was created to manage household chores but can be used for medication 
 
 Remembear is still under active development but will be available as a binary and Docker container once released. Until then, you can check out the [contributor guidelines](https://github.com/codehearts/remembear/blob/master/CONTRIBUTING.md) for steps to build and run remembear locally
 
+## Configuration
+
+Remembear is configured by `remembear.yml` in the directory it's run from. A default configuration file is provided by this repo
+
+### Integrations
+
+Integrations can be configured by defining them in an `integrations` section in `remembear.yml`. To use an integration, `enabled` _must_ be set to `true`:
+
+```yaml
+integrations:
+  console:
+    enabled: true
+```
+
 ## Usage
 
 ### CLI Usage
 
-- User
-  - Add: Adds a new user (`remembear user add <name>`)
-  - List: Lists all users as a JSON array (`remembear user list`)
-  - Update: Updates an existing user (`remembear user update <uid> [-n name]`)
-  - Remove: Removes a user by their uid (`remembear user remove <uid>`)
-- Reminder
-  - Add: Adds a new reminder (`remembear reminder add <name> <schedule> [assignees..]`)
-  - List: Lists all reminders as a JSON array (`remembear reminder list`)
-  - Update: Updates an existing reminder (`remembear reminder update <uid> [-n|--name name] [-s|--schedule schedule] [-a|--assignees assignees..]`)
-  - Remove: Removes a reminder by its uid (`remembear reminder remove <uid>`)
-- Start: Starts the scheduler, running until the process is killed
+Subcommand | Description | Usage
+---------- | ----------- | -----
+Start | Starts the scheduler, running until the process is killed | `remembear start`
+Integration | Provides a per-integration CLI interface | `remembear integration <integration> [subcommand..]`
 
-Note that schedules are in the following format:
+#### Users
+
+Subcommand | Description | Usage
+---------- | ----------- | -----
+Add | Adds a new user | `remembear user add <name>`
+List | Lists all users as a JSON array | `remembear user list`
+Update | Updates an existing user | `remembear user update <uid> [-n name]`
+Remove | Removes a user by their uid | `remembear user remove <uid>`
+
+#### Reminders
+
+Subcommand | Description | Usage
+---------- | ----------- | -----
+Add | Adds a new reminder | `remembear reminder add <name> <schedule> [assignees..]`
+List | Lists all reminders as a JSON array | `remembear reminder list`
+Update | Updates an existing reminder | `remembear reminder update <uid> [-n\|--name name] [-s\|--schedule schedule] [-a\|--assignees assignees..]`
+Remove | Removes a reminder by its uid | `remembear reminder remove <uid>`
+
+Note that schedules are in UTC and use the following format:
 
 ```
 {
@@ -34,6 +59,15 @@ Note that schedules are in the following format:
   "wed": ["10:00:00", "22:00:00"]
 }
 ```
+
+#### Integrations
+
+##### Console
+
+Subcommand | Description | Usage
+---------- | ----------- | -----
+Color | Sets the color to display a user's name in | `remembear integration console color <uid> <color_word>`
+Remove | Removes the color set for a user | `remembear integration console remove <uid>`
 
 ## Development
 

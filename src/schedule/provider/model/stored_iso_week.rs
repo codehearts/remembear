@@ -30,11 +30,11 @@ where
         let shifted_year = self
             .year
             .checked_mul(100)
-            .ok_or_else(|| Error::YearTooLarge(self.year))?;
+            .ok_or(Error::YearTooLarge(self.year))?;
 
         let serialized_iso_week = shifted_year
             .checked_add(self.week)
-            .ok_or_else(|| Error::WeekTooLarge(self.week))?;
+            .ok_or(Error::WeekTooLarge(self.week))?;
 
         serialized_iso_week.to_sql(out)
     }
@@ -60,7 +60,7 @@ impl TryInto<DateTime<Utc>> for StoredIsoWeek {
 
     /// Converts from a `StoredIsoWeek` to chrono's `DateTime<Utc>` type
     fn try_into(self) -> Result<DateTime<Utc>, Self::Error> {
-        let week = u32::try_from(self.week).map_err(|_| Error::WeekTooLarge(self.week))?;
+        let week = u32::try_from(self.week).or(Err(Error::WeekTooLarge(self.week)))?;
         let year = self.year;
 
         match Utc

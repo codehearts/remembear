@@ -58,6 +58,7 @@ jobs:
       - name: Tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
+          version: '0.16.0'
           args: '--all-features --ignored'
         env:
           CARGO_HUSKY_DONT_INSTALL_HOOKS: true

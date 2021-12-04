@@ -17,13 +17,11 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
-          override: true
           components: clippy, rustfmt
       - uses: actions-rs/install@v0.1
         with:
           crate: sccache
-          version: latest
+          version: 0.2.13
           use-tool-cache: true
       - uses: actions/cache@v2
         with:
@@ -47,13 +45,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
       - uses: actions-rs/install@v0.1
         with:
           crate: sccache
-          version: latest
+          version: 0.2.13
           use-tool-cache: true
       - run: sudo apt-get -q update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
       - uses: actions/cache@v2
@@ -67,7 +62,7 @@ jobs:
         env:
           CARGO_HUSKY_DONT_INSTALL_HOOKS: true
           RUSTC_WRAPPER: sccache
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v2
       - run: sccache --show-stats
 
   build:
@@ -76,13 +71,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
       - uses: actions-rs/install@v0.1
         with:
           crate: sccache
-          version: latest
+          version: 0.2.13
           use-tool-cache: true
       - run: sudo apt-get -q update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
       - uses: actions/cache@v2

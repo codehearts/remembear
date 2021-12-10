@@ -9,8 +9,7 @@ use serde::Serialize;
 use std::convert::TryInto;
 
 /// Record for an individual reminder
-#[derive(Debug, Identifiable, PartialEq, Serialize)]
-#[primary_key("uid")]
+#[derive(Debug, PartialEq, Serialize)]
 pub struct Reminder {
     /// Unique identifier for the reminder record
     pub uid: i32,

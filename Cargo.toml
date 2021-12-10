@@ -7,7 +7,7 @@ homepage = "https://github.com/codehearts/remembear"
 repository = "https://github.com/codehearts/remembear"
 documentation = "https://docs.rs/remembear"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 chrono = { version="0.4", default-features=false, features=["clock", "serde"] }

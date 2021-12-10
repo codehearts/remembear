@@ -30,11 +30,11 @@ where
         let shifted_year = self
             .year
             .checked_mul(100)
-            .ok_or_else(|| Error::YearTooLarge(self.year))?;
+            .ok_or(Error::YearTooLarge(self.year))?;
 
         let serialized_iso_week = shifted_year
             .checked_add(self.week)
-            .ok_or_else(|| Error::WeekTooLarge(self.week))?;
+            .ok_or(Error::WeekTooLarge(self.week))?;
 
         serialized_iso_week.to_sql(out)
     }

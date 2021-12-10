@@ -4,8 +4,9 @@ use super::Error;
 use crate::{Integrations, Providers, Reminder};
 use chrono::Utc;
 use std::collections::BTreeMap;
-use tokio::stream::StreamExt;
-use tokio::time::{delay_queue, DelayQueue, Duration, Instant};
+use tokio::time::{Duration, Instant};
+use tokio_stream::StreamExt;
+use tokio_util::time::{delay_queue, DelayQueue};
 
 /// A reminder with an associated scheduler key
 struct ScheduledReminder {

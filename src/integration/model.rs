@@ -29,7 +29,7 @@ impl Uid {
 }
 
 /// Integration configuration record for a specific UID
-#[derive(AsChangeset, Debug, Identifiable, Insertable, PartialEq, Queryable, Serialize)]
+#[derive(AsChangeset, Debug, Insertable, PartialEq, Queryable, Serialize)]
 #[primary_key("uid", "uid_type", "name")]
 #[table_name = "integrations"]
 pub struct Record {

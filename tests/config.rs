@@ -10,6 +10,16 @@ fn it_deserializes_valid_configs_to_correct_type() {
                 path: String::from("valid.sqlite3"),
             },
         },
+        integrations: Some(
+            vec![(
+                String::from("console"),
+                vec![(String::from("enabled"), String::from("true"))]
+                    .into_iter()
+                    .collect(),
+            )]
+            .into_iter()
+            .collect(),
+        ),
     };
 
     let load_result = Config::load("tests/assets/valid_config");

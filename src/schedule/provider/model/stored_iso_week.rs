@@ -60,7 +60,7 @@ impl TryInto<DateTime<Utc>> for StoredIsoWeek {
 
     /// Converts from a `StoredIsoWeek` to chrono's `DateTime<Utc>` type
     fn try_into(self) -> Result<DateTime<Utc>, Self::Error> {
-        let week = u32::try_from(self.week).map_err(|_| Error::WeekTooLarge(self.week))?;
+        let week = u32::try_from(self.week).or(Err(Error::WeekTooLarge(self.week)))?;
         let year = self.year;
 
         match Utc

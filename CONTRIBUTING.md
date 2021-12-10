@@ -6,6 +6,7 @@ Remembear is a Rust library which can be built as a binary application. This gui
   - [Helpful Resources](#helpful-resources)
 - [:herb: Project Structure](#herb-project-structure)
 - [:computer: Development](#computer-development)
+  - [Adding Service Integrations](#adding-service-integrations)
   - [Unit Tests](#unit-tests)
   - [Integration Tests](#integration-tests)
 - [:incoming_envelope: Submitting Changes](#incoming_envelope-submitting-changes)
@@ -47,20 +48,26 @@ If you're new to Rust, you may find these resources helpful:
 
 ## :herb: Project Structure
 
+This project uses a data provider model, with most modules being organized into these three files:
+
+- `error.rs` - Error types specific to the module
+- `model.rs` - Models, usually structs, for representing the module's data
+- `provider.rs` - Utilizes dependencies like the database to provide model data
+
+The overall project structure is as follows:
+
 - `src/` - Source code
   - `lib.rs` - Library entrypoint
   - `main.rs` - Binary entrypoint 
   - `command/` - Command-line interface module
-  - `database/` - Database management layer
-  - `reminder/` - Reminder management layer
-  - `schedule/` - Stateless schedule management layer
+  - `database/` - Database integration
+  - `integration/` - Integrations with external services
+  - `reminder/` - Reminder datatypes
+  - `schedule/` - Stateless schedule datatype
     - `provider/` - Provides schedule data from the database
       - `model/` - Models for serialized schedule data
-  - `scheduler/` - Real-time reminder scheduling layer
-  - `user/` - User management layer
-    - `error.rs` - Custom failure types for user data
-    - `model.rs` - Database-compatible structures for user data
-    - `provider.rs` - Provides user data, abstracting away the database dependency
+  - `scheduler/` - Real-time reminder scheduler
+  - `user/` - User datatypes
 - `tests/` - Integration tests
   - `assets/` - Integration test assets
   - `common/` - Common integration test functionality
@@ -74,6 +81,20 @@ If you're new to Rust, you may find these resources helpful:
 Remembear is written with the latest stable version of Rust and makes extensive use of these crates:
 
 - [Diesel](http://diesel.rs) for persistent storage with sqlite3
+
+### Adding Service Integrations
+
+Integration with external services can be added with support for local storage.
+
+1. Create a directory for your integration in `src/integration/`
+1. Implement the `Integration` trait
+  - `name` should return a name for your integration
+  - `execute` is where you can implement a CLI interface for your integration
+  - `notify` is called when a scheduled reminder goes off. This is where you'll integrate with the external service and do something with the reminder.
+1. Initialize your integration in `Integrations::new()`
+1. Last but not least, enable your integration in `remembear.yml`!
+
+You can look at `src/integration/console/` for an example which writes to stdout, with support for setting colors for assignees in the database via a CLI interface.
 
 ### Unit Tests
 

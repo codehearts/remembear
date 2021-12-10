@@ -1,3 +1,6 @@
 database:
   sqlite:
     path: valid.sqlite3
+integrations:
+  console:
+    enabled: true

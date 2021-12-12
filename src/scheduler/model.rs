@@ -2,9 +2,9 @@
 
 use super::Error;
 use crate::{Integrations, Providers, Reminder};
-use chrono::Utc;
 use std::collections::BTreeMap;
-use tokio::time::{Duration, Instant};
+use time::OffsetDateTime;
+use tokio::time::Instant;
 use tokio_stream::StreamExt;
 use tokio_util::time::{delay_queue, DelayQueue};
 
@@ -74,7 +74,7 @@ impl<'a> Scheduler<'a> {
 
             // Notify integrations
             if !self.integrations.is_empty() {
-                let timestamp = Utc::now();
+                let timestamp = OffsetDateTime::now_utc();
                 let assignees = vec![self
                     .providers
                     .user
@@ -113,11 +113,8 @@ impl<'a> Scheduler<'a> {
 fn get_next_instant(reminder: &Reminder) -> Option<Instant> {
     reminder
         .schedule
-        .get_next_duration(Utc::now())
-        .map(|duration| {
-            // Convert from chrono's `Duration` to tokio's
-            Instant::now() + duration.to_std().unwrap_or_else(|_| Duration::from_secs(0))
-        })
+        .get_next_duration(OffsetDateTime::now_utc())
+        .map(|duration| (time::Instant::now() + duration).into_inner().into())
 }
 
 #[cfg(test)]
@@ -125,15 +122,15 @@ mod tests {
     use super::*;
     use crate::integration::{Integrations, MockIntegration};
     use crate::{Schedule, User};
-    use chrono::{offset::TimeZone, DateTime, Datelike, Utc, Weekday};
     use mockall::predicate::*;
+    use time::macros::datetime;
 
     type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
     /// Creates a schedule for the given durations from now
     fn schedule_from_timestamp(
-        timestamp: DateTime<Utc>,
-        durations: Vec<chrono::Duration>,
+        timestamp: OffsetDateTime,
+        durations: Vec<time::Duration>,
     ) -> Schedule {
         Schedule::new(
             vec![(
@@ -145,7 +142,7 @@ mod tests {
             )]
             .into_iter()
             .collect(),
-            Utc.isoywd(2020, 1, Weekday::Mon).and_hms(0, 0, 0),
+            datetime!(2020-01-06 00:00:00 UTC), // First Monday of January
             vec![1],
         )
     }
@@ -154,7 +151,7 @@ mod tests {
     async fn it_does_nothing_with_empty_schedules() -> Result<()> {
         let schedule = Schedule::new(
             vec![].into_iter().collect(),
-            Utc.isoywd(2020, 1, Weekday::Mon).and_hms(0, 0, 0),
+            datetime!(2020-01-06 00:00:00 UTC), // First Monday of January
             vec![1],
         );
 
@@ -179,11 +176,15 @@ mod tests {
 
     #[tokio::test]
     async fn it_schedules_multiple_reminders() -> Result<()> {
-        let schedule_1 =
-            schedule_from_timestamp(Utc::now(), vec![chrono::Duration::milliseconds(5)]);
+        let schedule_1 = schedule_from_timestamp(
+            OffsetDateTime::now_utc(),
+            vec![time::Duration::milliseconds(5)],
+        );
 
-        let schedule_2 =
-            schedule_from_timestamp(Utc::now(), vec![chrono::Duration::milliseconds(10)]);
+        let schedule_2 = schedule_from_timestamp(
+            OffsetDateTime::now_utc(),
+            vec![time::Duration::milliseconds(10)],
+        );
 
         let reminders = vec![
             Reminder {
@@ -216,10 +217,10 @@ mod tests {
     #[tokio::test]
     async fn it_reschedules_reminders_when_they_leave_the_queue() -> Result<()> {
         let schedule = schedule_from_timestamp(
-            Utc::now(),
+            OffsetDateTime::now_utc(),
             vec![
-                chrono::Duration::milliseconds(5),
-                chrono::Duration::milliseconds(10),
+                time::Duration::milliseconds(5),
+                time::Duration::milliseconds(10),
             ],
         );
 
@@ -253,8 +254,8 @@ mod tests {
     }
 
     /// Returns a reminder named "Reminder" with uid 1 assigned
-    fn test_reminder(timestamp: DateTime<Utc>) -> Reminder {
-        let schedule = schedule_from_timestamp(timestamp, vec![chrono::Duration::milliseconds(5)]);
+    fn test_reminder(timestamp: OffsetDateTime) -> Reminder {
+        let schedule = schedule_from_timestamp(timestamp, vec![time::Duration::milliseconds(5)]);
 
         Reminder {
             uid: 1,
@@ -265,7 +266,7 @@ mod tests {
 
     #[tokio::test]
     async fn it_notifies_integrations_with_reminders() -> Result<()> {
-        let current_timestamp = Utc::now();
+        let current_timestamp = OffsetDateTime::now_utc();
 
         let mut mock_user_provider = crate::user::provider::MockProvidable::new();
         mock_user_provider
@@ -289,7 +290,7 @@ mod tests {
                 always(),
                 eq(test_reminder(current_timestamp)),
                 function(|users: &[User]| users[0] == test_user()),
-                gt(Utc::now()),
+                gt(OffsetDateTime::now_utc()),
             )
             .returning(|_, _, _, _| Ok(()))
             .times(1);
@@ -311,7 +312,7 @@ mod tests {
 
     #[tokio::test]
     async fn it_continues_when_an_integration_fails() -> Result<()> {
-        let current_timestamp = Utc::now();
+        let current_timestamp = OffsetDateTime::now_utc();
 
         let mut mock_user_provider = crate::user::provider::MockProvidable::new();
         mock_user_provider
@@ -335,7 +336,7 @@ mod tests {
                 always(),
                 eq(test_reminder(current_timestamp)),
                 function(|users: &[User]| users[0] == test_user()),
-                gt(Utc::now()),
+                gt(OffsetDateTime::now_utc()),
             )
             .returning(|_, _, _, _| Err(Box::new(Error::Unavailable(1))))
             .times(1);

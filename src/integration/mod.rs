@@ -11,9 +11,9 @@ mod console;
 mod error;
 
 use crate::{config, Config, Providers, Reminder, User};
-use chrono::{DateTime, Utc};
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
+use time::OffsetDateTime;
 
 #[cfg(test)]
 use mockall::automock;
@@ -46,7 +46,7 @@ pub trait Integration {
         providers: &Providers<'a>,
         reminder: &Reminder,
         assignees: &[User],
-        timestamp: &DateTime<Utc>,
+        timestamp: &OffsetDateTime,
     ) -> Result<(), Box<dyn std::error::Error>>;
 }
 

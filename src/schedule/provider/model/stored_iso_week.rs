@@ -1,14 +1,13 @@
 //! Model for serialized ISO weeks in persistent storage
 
 use crate::schedule::Error;
-use chrono::offset::LocalResult;
-use chrono::{DateTime, TimeZone, Utc, Weekday};
 use diesel::deserialize::{FromSql, Result as FromSqlResult};
 use diesel::serialize::{Output, Result as ToSqlResult, ToSql};
 use diesel::{backend::Backend, sql_types::Integer};
 use serde::Deserialize;
 use std::convert::{TryFrom, TryInto};
 use std::io::Write;
+use time::{util::weeks_in_year, Date, OffsetDateTime, Weekday};
 
 /// Model for serialized ISO weeks in persistent storage
 #[derive(AsExpression, Debug, Deserialize, FromSqlRow, PartialEq)]
@@ -55,20 +54,23 @@ where
     }
 }
 
-impl TryInto<DateTime<Utc>> for StoredIsoWeek {
+impl TryInto<OffsetDateTime> for StoredIsoWeek {
     type Error = Error;
 
-    /// Converts from a `StoredIsoWeek` to chrono's `DateTime<Utc>` type
-    fn try_into(self) -> Result<DateTime<Utc>, Self::Error> {
-        let week = u32::try_from(self.week).or(Err(Error::WeekTooLarge(self.week)))?;
+    /// Converts from a `StoredIsoWeek` to time's `OffsetDateTime` type
+    fn try_into(self) -> Result<OffsetDateTime, Self::Error> {
+        let week = u8::try_from(self.week)
+            .ok()
+            .filter(|week| week <= &weeks_in_year(self.year))
+            .ok_or(Error::WeekTooLarge(self.week))?;
         let year = self.year;
 
-        match Utc
-            .isoywd_opt(year, week, Weekday::Mon)
-            .and_hms_opt(0, 0, 0)
-        {
-            LocalResult::Single(start_date) => Ok(start_date),
-            _ => Err(Error::InvalidStartWeek { week, year }),
+        match Date::from_iso_week_date(year, week, Weekday::Monday) {
+            Ok(start_date) => Ok(start_date.midnight().assume_utc()),
+            _ => Err(Error::InvalidStartWeek {
+                week: u32::from(week),
+                year,
+            }),
         }
     }
 }
@@ -76,6 +78,7 @@ impl TryInto<DateTime<Utc>> for StoredIsoWeek {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use time::macros::datetime;
 
     #[test]
     fn it_converts_to_utc_datetime() {
@@ -84,7 +87,7 @@ mod tests {
             week: 2,
         };
 
-        let expected_datetime = Utc.ymd(2020, 1, 6).and_hms(0, 0, 0);
+        let expected_datetime = datetime!(2020-01-06 00:00:00 UTC);
 
         assert_eq!(Ok(expected_datetime), iso_week.try_into());
     }
@@ -96,10 +99,7 @@ mod tests {
             week: 256,
         };
 
-        let expected_error: Result<DateTime<Utc>, _> = Err(Error::InvalidStartWeek {
-            week: 256,
-            year: 2020,
-        });
+        let expected_error: Result<OffsetDateTime, _> = Err(Error::WeekTooLarge(256));
 
         assert_eq!(expected_error, iso_week.try_into());
     }

@@ -3,8 +3,8 @@
 use super::{Command, Providers};
 use crate::reminder::model::{NewReminder, UpdatedReminder};
 use crate::Schedule;
-use chrono::{DateTime, Datelike, TimeZone, Utc, Weekday};
 use structopt::StructOpt;
+use time::{OffsetDateTime, Weekday};
 
 #[derive(StructOpt)]
 /// Commands for reminder management
@@ -104,10 +104,17 @@ impl Command for Reminder {
 }
 
 /// Returns the start of the current week
-fn get_start_of_this_week() -> DateTime<Utc> {
-    let iso_week = Utc::today().iso_week();
-    Utc.isoywd(iso_week.year(), iso_week.week(), Weekday::Mon)
-        .and_hms(0, 0, 0)
+fn get_start_of_this_week() -> OffsetDateTime {
+    let mut today = OffsetDateTime::now_utc().date();
+
+    while today.weekday() != Weekday::Monday {
+        match today.previous_day() {
+            Some(date) => today = date,
+            None => break,
+        }
+    }
+
+    today.midnight().assume_utc()
 }
 
 #[cfg(test)]
@@ -116,9 +123,9 @@ mod tests {
     use crate::reminder::{model, provider::MockProvidable};
     use mockall::predicate::eq;
 
-    const SCHEDULE_ROADHOUSE: &str = r#"{"mon":["21:00:00"]}"#;
-    const SCHEDULE_253: &str = r#"{"wed":["14:53:00"]}"#;
-    const SCHEDULE_254: &str = r#"{"wed":["14:54:00"]}"#;
+    const SCHEDULE_ROADHOUSE: &str = r#"{"Monday":["21:00:00.0"]}"#;
+    const SCHEDULE_253: &str = r#"{"Wednesday":["14:53:00.0"]}"#;
+    const SCHEDULE_254: &str = r#"{"Wednesday":["14:54:00.0"]}"#;
 
     const ASSIGNEES_ROADHOUSE: [i32; 2] = [1, 2];
     const ASSIGNEES_253: [i32; 2] = [3, 4];

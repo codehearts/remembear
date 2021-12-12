@@ -6,10 +6,10 @@ mod common_database;
 #[macro_use]
 extern crate diesel;
 
-use chrono::{offset::TimeZone, NaiveTime, Utc, Weekday};
 use diesel::{connection::SimpleConnection, ExpressionMethods, QueryDsl, RunQueryDsl};
 use std::convert::TryInto;
 use thiserror::Error;
+use time::{macros::time, Date, Weekday};
 
 use common::Result;
 use remembear::{schedule, Schedule};
@@ -69,21 +69,21 @@ fn insert(
 #[test]
 fn it_reads_schedules_from_sql() -> Result<()> {
     let expected_schedule = Schedule::new(
-        vec![(
-            Weekday::Mon,
-            vec![
-                NaiveTime::from_hms(1, 23, 45),
-                NaiveTime::from_hms(12, 34, 56),
-            ],
-        )]
-        .into_iter()
-        .collect(),
-        Utc.isoywd(2020, 3, Weekday::Mon).and_hms(0, 0, 0),
+        vec![(Weekday::Monday, vec![time!(01:23:45), time!(12:34:56)])]
+            .into_iter()
+            .collect(),
+        Date::from_iso_week_date(2020, 3, Weekday::Monday)?
+            .midnight()
+            .assume_utc(),
         vec![1, 2, 3],
     );
 
-    let database_schedule =
-        insert(r#"{"mon":["01:23:45","12:34:56"]}"#, 202003, "[1, 2, 3]")?.try_into()?;
+    let database_schedule = insert(
+        r#"{"Monday":["01:23:45.0","12:34:56.0"]}"#,
+        202003,
+        "[1, 2, 3]",
+    )?
+    .try_into()?;
 
     assert_eq!(expected_schedule, database_schedule);
 

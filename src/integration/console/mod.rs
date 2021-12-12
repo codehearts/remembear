@@ -2,9 +2,9 @@
 
 use super::{model::Uid, Integration};
 use crate::{Providers, Reminder, User};
-use chrono::{DateTime, Local, Utc};
 use colored::Colorize;
 use std::io::Write;
+use time::{OffsetDateTime, UtcOffset};
 
 mod command;
 use command::Command;
@@ -34,10 +34,13 @@ impl<'a> Integration for Console<'a> {
         providers: &Providers,
         reminder: &Reminder,
         assignees: &[User],
-        timestamp: &DateTime<Utc>,
+        timestamp: &OffsetDateTime,
     ) -> Result<(), Box<dyn std::error::Error>> {
         // Convert the UTC timestamp to the local timezone
-        let local_timestamp = timestamp.with_timezone(&Local).format("%F %T%z");
+        let local_timestamp = format_date(
+            timestamp.to_offset(UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC)),
+        );
+
         // Concatenate the assignees' names for human-readable display
         let assignee_names = assignees
             .iter()
@@ -71,15 +74,33 @@ impl<'a> Integration for Console<'a> {
     }
 }
 
+/// Formats a date for human-readable output
+fn format_date(datetime: OffsetDateTime) -> String {
+    let timezone = datetime.offset();
+    let (year, month, day) = datetime.to_calendar_date();
+    let (hour, minute, second) = datetime.to_hms();
+
+    format!(
+        "{}-{:0.2}-{:0.2} {:0.2}:{:0.2}:{:0.2} {:+.3}",
+        year,
+        u8::from(month),
+        day,
+        hour,
+        minute,
+        second,
+        timezone.whole_hours()
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::integration::Error;
     use crate::schedule::model::WeeklyTimes;
     use crate::{Reminder, Schedule, User};
-    use chrono::TimeZone;
     use mockall::predicate::*;
     use std::io::stdout;
+    use time::macros::datetime;
 
     #[test]
     fn it_has_proper_name() {
@@ -89,8 +110,10 @@ mod tests {
 
     #[test]
     fn it_outputs_uncolored_names_on_notify() -> Result<(), Box<dyn std::error::Error>> {
-        let timestamp = Utc.ymd(2020, 1, 1).and_hms(0, 1, 2);
-        let local_timestamp = timestamp.with_timezone(&Local).format("%F %T%z");
+        let timestamp = datetime!(2020-01-01 00:01:02 UTC);
+        let local_timestamp = format_date(
+            timestamp.to_offset(UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC)),
+        );
 
         let config_1 = Ok(serde_json::json!({}));
         let config_2 = Ok(serde_json::json!({}));
@@ -106,8 +129,10 @@ mod tests {
 
     #[test]
     fn it_outputs_colored_names_on_notify() -> Result<(), Box<dyn std::error::Error>> {
-        let timestamp = Utc.ymd(2020, 1, 1).and_hms(0, 1, 2);
-        let local_timestamp = timestamp.with_timezone(&Local).format("%F %T%z");
+        let timestamp = datetime!(2020-01-01 00:01:02 UTC);
+        let local_timestamp = format_date(
+            timestamp.to_offset(UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC)),
+        );
 
         let assignees = format!("{}, {}", "Laura".color("red"), "Donna".color("green"));
 
@@ -125,8 +150,10 @@ mod tests {
 
     #[test]
     fn it_outputs_despite_provider_failures_on_notify() -> Result<(), Box<dyn std::error::Error>> {
-        let timestamp = Utc.ymd(2020, 1, 1).and_hms(0, 1, 2);
-        let local_timestamp = timestamp.with_timezone(&Local).format("%F %T%z");
+        let timestamp = datetime!(2020-01-01 00:01:02 UTC);
+        let local_timestamp = format_date(
+            timestamp.to_offset(UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC)),
+        );
 
         let config_1 = Err(Error::JSONSerialization(String::from("dummy error")));
         let config_2 = Err(Error::JSONSerialization(String::from("dummy error")));
@@ -152,7 +179,7 @@ mod tests {
     ///
     /// When the console integration fails to run or the output is not UTF-8.
     fn get_console_output(
-        timestamp: DateTime<Utc>,
+        timestamp: OffsetDateTime,
         config_1: Result<serde_json::Value, Error>,
         config_2: Result<serde_json::Value, Error>,
     ) -> Result<String, Box<dyn std::error::Error>> {

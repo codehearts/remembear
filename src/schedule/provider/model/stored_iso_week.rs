@@ -10,7 +10,7 @@ use std::io::Write;
 use time::{util::weeks_in_year, Date, OffsetDateTime, Weekday};
 
 /// Model for serialized ISO weeks in persistent storage
-#[derive(AsExpression, Debug, Deserialize, FromSqlRow, PartialEq)]
+#[derive(AsExpression, Debug, Deserialize, Eq, FromSqlRow, PartialEq)]
 #[sql_type = "Integer"]
 pub struct StoredIsoWeek {
     /// Year of the ISO week

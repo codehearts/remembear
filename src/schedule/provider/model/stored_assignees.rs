@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::io::Write;
 
 /// Model for serialized scheduled assignees in persistent storage
-#[derive(AsExpression, Debug, Deserialize, FromSqlRow, PartialEq, Serialize)]
+#[derive(AsExpression, Debug, Deserialize, Eq, FromSqlRow, PartialEq, Serialize)]
 #[sql_type = "Text"]
 pub struct StoredAssignees(pub Vec<i32>);
 

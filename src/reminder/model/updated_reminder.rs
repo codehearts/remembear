@@ -3,7 +3,7 @@
 use crate::Schedule;
 
 /// Necessary data to update an existing reminder
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct UpdatedReminder {
     /// Unique identifier of the record to update
     pub uid: i32,

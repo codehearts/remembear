@@ -12,7 +12,7 @@ use serde::Deserialize;
 use std::convert::{From, TryFrom, TryInto};
 
 /// Provides access to scheduling data in persistent storage
-#[derive(Debug, Deserialize, Insertable, PartialEq, Queryable)]
+#[derive(Debug, Deserialize, Eq, Insertable, PartialEq, Queryable)]
 #[table_name = "reminders"]
 pub struct Provider {
     /// Scheduled times of day throughout the week

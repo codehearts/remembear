@@ -13,7 +13,7 @@ pub type WeeklyTimes = HashMap<Weekday, Vec<Time>>;
 type SortedWeeklyTimes = BTreeMap<u8, Vec<Time>>;
 
 /// Stateless weekly schedule with support for rotating assignees
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Debug, Eq, PartialEq, Serialize)]
 pub struct Schedule {
     /// Scheduled times of day throughout the week
     pub(crate) weekly_times: WeeklyTimes,

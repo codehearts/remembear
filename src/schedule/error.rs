@@ -3,7 +3,7 @@
 use thiserror::Error;
 
 /// Scheduling errors
-#[derive(Debug, Error, PartialEq)]
+#[derive(Debug, Error, Eq, PartialEq)]
 pub enum Error {
     /// The starting week for a schedule is invalid
     #[error("Invalid starting week: week {week} of year {year}")]

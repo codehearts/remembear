@@ -4,7 +4,7 @@ use crate::database::schema::reminders;
 use crate::{schedule, Schedule};
 
 /// Necessary data to create a new reminder
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct NewReminder {
     /// Name of the reminder
     pub name: String,
@@ -13,7 +13,7 @@ pub struct NewReminder {
 }
 
 /// Insertable `NewReminder` for use with `diesel`
-#[derive(Debug, Insertable, PartialEq)]
+#[derive(Debug, Insertable, Eq, PartialEq)]
 #[table_name = "reminders"]
 pub(crate) struct InsertableNewReminder {
     /// Name of the reminder

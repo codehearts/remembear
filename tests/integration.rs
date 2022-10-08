@@ -3,12 +3,12 @@
 mod common;
 mod common_database;
 
-use chrono::{DateTime, Utc};
 use common::Result;
 use remembear::integration::model::{Record, Uid};
 use remembear::integration::Integration;
 use remembear::integration::{provider::Providable, Provider};
 use remembear::{Providers, Reminder, User};
+use time::OffsetDateTime;
 
 struct MockIntegration();
 
@@ -26,7 +26,7 @@ impl Integration for MockIntegration {
         _providers: &Providers,
         _reminder: &Reminder,
         _assignees: &[User],
-        _timestamp: &DateTime<Utc>,
+        _timestamp: &OffsetDateTime,
     ) -> Result<()> {
         Ok(())
     }

@@ -4,7 +4,7 @@ use crate::database::schema::users;
 use serde::Serialize;
 
 /// Record for an individual user of the service
-#[derive(AsChangeset, Debug, PartialEq, Queryable, Serialize)]
+#[derive(AsChangeset, Debug, Eq, PartialEq, Queryable, Serialize)]
 #[primary_key("uid")]
 pub struct User {
     /// Unique identifier for the user record
@@ -14,7 +14,7 @@ pub struct User {
 }
 
 /// Necessary data to create a new user
-#[derive(Debug, Insertable, PartialEq)]
+#[derive(Debug, Insertable, Eq, PartialEq)]
 #[table_name = "users"]
 pub struct NewUser {
     /// Preferred name of the user

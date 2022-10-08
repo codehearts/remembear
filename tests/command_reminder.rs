@@ -4,22 +4,25 @@ mod common;
 mod common_command;
 mod common_database;
 
-use chrono::{DateTime, Datelike, TimeZone, Utc, Weekday};
 use common::Result;
 use common_command::Executor;
 use remembear::{Reminder, Schedule};
+use time::{Date, OffsetDateTime, Weekday};
 
 /// Returns the start of the current week
-fn get_start_of_this_week() -> DateTime<Utc> {
-    let iso_week = Utc::today().iso_week();
-    Utc.isoywd(iso_week.year(), iso_week.week(), Weekday::Mon)
-        .and_hms(0, 0, 0)
+fn get_start_of_this_week() -> Result<OffsetDateTime> {
+    let today = OffsetDateTime::now_utc();
+    Ok(
+        Date::from_iso_week_date(today.year(), today.iso_week(), Weekday::Monday)?
+            .midnight()
+            .assume_utc(),
+    )
 }
 
 #[tokio::test]
 async fn it_outputs_added_reminder() -> Result<()> {
     let executor = Executor::new()?;
-    let schedule = r#"{"mon":["21:00:00"]}"#;
+    let schedule = r#"{"Monday":["21:00:00.0"]}"#;
 
     let output = executor
         .execute(&[
@@ -38,7 +41,7 @@ async fn it_outputs_added_reminder() -> Result<()> {
         name: String::from("Meet at Roadhouse"),
         schedule: Schedule::new(
             serde_json::from_str(schedule)?,
-            get_start_of_this_week(),
+            get_start_of_this_week()?,
             vec![1, 2],
         ),
     })?;
@@ -51,8 +54,8 @@ async fn it_outputs_added_reminder() -> Result<()> {
 #[tokio::test]
 async fn it_lists_all_reminders() -> Result<()> {
     let executor = Executor::new()?;
-    let schedule_1 = r#"{"mon":["21:00:00"]}"#;
-    let schedule_2 = r#"{"wed":["14:53:00"]}"#;
+    let schedule_1 = r#"{"Monday":["21:00:00.0"]}"#;
+    let schedule_2 = r#"{"Wednesday":["14:53:00.0"]}"#;
 
     executor
         .execute(&["remembear", "reminder", "add", "Roadhouse", schedule_1, "1"])
@@ -69,7 +72,7 @@ async fn it_lists_all_reminders() -> Result<()> {
             name: String::from("Roadhouse"),
             schedule: Schedule::new(
                 serde_json::from_str(schedule_1)?,
-                get_start_of_this_week(),
+                get_start_of_this_week()?,
                 vec![1],
             ),
         },
@@ -78,7 +81,7 @@ async fn it_lists_all_reminders() -> Result<()> {
             name: String::from("2:53"),
             schedule: Schedule::new(
                 serde_json::from_str(schedule_2)?,
-                get_start_of_this_week(),
+                get_start_of_this_week()?,
                 vec![2],
             ),
         },
@@ -92,8 +95,8 @@ async fn it_lists_all_reminders() -> Result<()> {
 #[tokio::test]
 async fn it_updates_reminders() -> Result<()> {
     let executor = Executor::new()?;
-    let old_schedule = r#"{"mon":["21:00:00"]}"#;
-    let new_schedule = r#"{"wed":["21:30:00"]}"#;
+    let old_schedule = r#"{"Monday":["21:00:00.0"]}"#;
+    let new_schedule = r#"{"Wednesday":["21:30:00.0"]}"#;
 
     executor
         .execute(&["remembear", "reminder", "add", "Roadhouse", old_schedule])
@@ -119,7 +122,7 @@ async fn it_updates_reminders() -> Result<()> {
         name: String::from("Meet at Roadhouse"),
         schedule: Schedule::new(
             serde_json::from_str(new_schedule)?,
-            get_start_of_this_week(),
+            get_start_of_this_week()?,
             vec![3, 4],
         ),
     };
@@ -153,7 +156,7 @@ async fn it_errors_when_updating_invalid_uid() -> Result<()> {
 #[tokio::test]
 async fn it_removes_reminders() -> Result<()> {
     let executor = Executor::new()?;
-    let schedule = r#"{"mon":["21:00:00"]}"#;
+    let schedule = r#"{"Monday":["21:00:00.0"]}"#;
 
     executor
         .execute(&["remembear", "reminder", "add", "Roadhouse", schedule, "1"])
@@ -168,7 +171,7 @@ async fn it_removes_reminders() -> Result<()> {
         name: String::from("Roadhouse"),
         schedule: Schedule::new(
             serde_json::from_str(schedule)?,
-            get_start_of_this_week(),
+            get_start_of_this_week()?,
             vec![1],
         ),
     })?;

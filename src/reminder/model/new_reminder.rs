@@ -4,7 +4,7 @@ use crate::database::schema::reminders;
 use crate::{schedule, Schedule};
 
 /// Necessary data to create a new reminder
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct NewReminder {
     /// Name of the reminder
     pub name: String,
@@ -13,7 +13,7 @@ pub struct NewReminder {
 }
 
 /// Insertable `NewReminder` for use with `diesel`
-#[derive(Debug, Insertable, PartialEq)]
+#[derive(Debug, Insertable, Eq, PartialEq)]
 #[table_name = "reminders"]
 pub(crate) struct InsertableNewReminder {
     /// Name of the reminder
@@ -35,7 +35,7 @@ impl From<NewReminder> for InsertableNewReminder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::{TimeZone, Utc, Weekday};
+    use time::{Date, Weekday};
 
     type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -45,7 +45,9 @@ mod tests {
             name: String::from("Meet at Roadhouse"),
             schedule: Schedule::new(
                 vec![].into_iter().collect(),
-                Utc.isoywd(1989, 13, Weekday::Mon).and_hms(0, 0, 0),
+                Date::from_iso_week_date(1989, 13, Weekday::Monday)?
+                    .midnight()
+                    .assume_utc(),
                 vec![],
             ),
         };
@@ -54,7 +56,9 @@ mod tests {
             name: String::from("Meet at Roadhouse"),
             schedule: Schedule::new(
                 vec![].into_iter().collect(),
-                Utc.isoywd(1989, 13, Weekday::Mon).and_hms(0, 0, 0),
+                Date::from_iso_week_date(1989, 13, Weekday::Monday)?
+                    .midnight()
+                    .assume_utc(),
                 vec![],
             )
             .into(),

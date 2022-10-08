@@ -4,7 +4,7 @@ use crate::database::schema::integrations;
 use serde::Serialize;
 
 /// Type of UID for an integration record
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum Uid {
     /// User UID
     User(i32),
@@ -29,7 +29,7 @@ impl Uid {
 }
 
 /// Integration configuration record for a specific UID
-#[derive(AsChangeset, Debug, Insertable, PartialEq, Queryable, Serialize)]
+#[derive(AsChangeset, Debug, Insertable, Eq, PartialEq, Queryable, Serialize)]
 #[primary_key("uid", "uid_type", "name")]
 #[table_name = "integrations"]
 pub struct Record {

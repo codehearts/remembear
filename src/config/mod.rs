@@ -8,7 +8,7 @@ use serde::Deserialize;
 use std::collections::BTreeMap;
 
 /// All configurable properties of the app
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct Config {
     /// Configuration for the database
     pub database: Database,
@@ -17,14 +17,14 @@ pub struct Config {
 }
 
 /// All configurable database properties
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct Database {
     /// Configuration for the sqlite database
     pub sqlite: SqliteDatabase,
 }
 
 /// All configurable sqlite database properties
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct SqliteDatabase {
     /// Path to the sqlite database
     pub path: String,

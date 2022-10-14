@@ -56,7 +56,7 @@ jobs:
       - name: Tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
-          args: '--all-features --ignored'
+          args: '--all-features --ignored --engine llvm'
         env:
           CARGO_HUSKY_DONT_INSTALL_HOOKS: true
           RUSTC_WRAPPER: sccache

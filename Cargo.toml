@@ -27,4 +27,4 @@ colored = { version="2.0", default-features=false }
 [dev-dependencies]
 cargo-husky = { version="1.5", features=["run-cargo-fmt", "run-cargo-clippy"] }
 diesel_migrations = { version = "1.4", features=["sqlite"] }
-mockall = "0.10"
+mockall = "0.11"

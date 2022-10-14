@@ -22,7 +22,7 @@ jobs:
         with:
           crate: sccache
           use-tool-cache: true
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/sccache
           key: ${{ runner.os }}-sccache-lint-${{ hashFiles('**/Cargo.lock') }}
@@ -49,7 +49,7 @@ jobs:
           crate: sccache
           use-tool-cache: true
       - run: sudo apt-get -q update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/sccache
           key: ${{ runner.os }}-sccache-test-${{ hashFiles('**/Cargo.lock') }}
@@ -74,7 +74,7 @@ jobs:
           crate: sccache
           use-tool-cache: true
       - run: sudo apt-get -q update && sudo apt-get install -y --no-install-recommends libsqlite3-dev
-      - uses: actions/cache@v2
+      - uses: actions/cache@v3
         with:
           path: ~/.cache/sccache
           key: ${{ runner.os }}-sccache-build-${{ hashFiles('**/Cargo.lock') }}
